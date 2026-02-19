@@ -34,6 +34,7 @@ if (!ctx) throw new Error("2D canvas context not available");
 const state = {
   programs: [],
   config: { fixtures: [], environments: [] },
+  colorPresets: [],
   selectedProgramId: null,
   runningProgramId: null,
   timelineSteps: 100,
@@ -44,6 +45,8 @@ const state = {
   canvasHeightCss: 1,
   lastFrame: null,
   paletteFeatureValues: {},
+  rgbBaseColorByKey: {},
+  rgbBrightnessByKey: {},
   selectedPaletteKey: null,
   drawTool: "pencil",
   painting: false,
@@ -57,8 +60,45 @@ const state = {
   lockedSpm: null,
 };
 
+const defaultColorPresets = [
+  { name: "Red", rgb: [255, 0, 0] },
+  { name: "Green", rgb: [0, 255, 0] },
+  { name: "Blue", rgb: [0, 0, 255] },
+  { name: "Warm White", rgb: [255, 214, 170] },
+  { name: "Cold White", rgb: [200, 228, 255] },
+];
+
 function send(event) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(event));
+}
+
+async function loadColorPresets() {
+  try {
+    const response = await fetch("/color-presets.json", { cache: "no-cache" });
+    if (!response.ok) throw new Error(`Preset load failed: ${response.status}`);
+    const parsed = await response.json();
+    if (!Array.isArray(parsed)) throw new Error("Preset file is not an array");
+
+    const valid = parsed
+      .filter((item) =>
+        item
+        && typeof item.name === "string"
+        && Array.isArray(item.rgb)
+        && item.rgb.length === 3,
+      )
+      .map((item) => ({
+        name: item.name,
+        rgb: [
+          clamp255(item.rgb[0]),
+          clamp255(item.rgb[1]),
+          clamp255(item.rgb[2]),
+        ],
+      }));
+
+    state.colorPresets = valid.length > 0 ? valid : defaultColorPresets;
+  } catch {
+    state.colorPresets = defaultColorPresets;
+  }
 }
 
 function selectedProgram() {
@@ -416,6 +456,15 @@ function defaultFeatureValues(feature) {
   return Array.from({ length: feature.channels.length }, () => 0);
 }
 
+function applyRgbBrightness(baseRgb, brightness) {
+  const scale = Math.max(0, Math.min(255, Number(brightness))) / 255;
+  return [
+    clamp255(baseRgb[0] * scale),
+    clamp255(baseRgb[1] * scale),
+    clamp255(baseRgb[2] * scale),
+  ];
+}
+
 function featureOptions() {
   const options = [];
   for (const fixtureType of state.config.fixtures) {
@@ -521,19 +570,112 @@ function renderPalette() {
   card.appendChild(name);
 
   if (active.feature.kind === "rgb") {
+    if (!state.rgbBaseColorByKey[active.key]) {
+      const [r = 0, g = 0, b = 0] = values;
+      state.rgbBaseColorByKey[active.key] = [clamp255(r), clamp255(g), clamp255(b)];
+    }
+    if (!Number.isFinite(state.rgbBrightnessByKey[active.key])) {
+      state.rgbBrightnessByKey[active.key] = 255;
+    }
+
+    const brightnessWrap = document.createElement("label");
+    brightnessWrap.className = "feature-input-row";
+    const brightnessLabel = document.createElement("span");
+    brightnessLabel.textContent = "Brightness";
+    const brightnessControl = document.createElement("div");
+    brightnessControl.style.display = "grid";
+    brightnessControl.style.gridTemplateColumns = "1fr 34px";
+    brightnessControl.style.gap = "6px";
+
+    const brightnessSlider = document.createElement("input");
+    brightnessSlider.type = "range";
+    brightnessSlider.min = "0";
+    brightnessSlider.max = "255";
+    brightnessSlider.step = "1";
+    brightnessSlider.value = String(clamp255(state.rgbBrightnessByKey[active.key]));
+
+    const brightnessValue = document.createElement("span");
+    brightnessValue.className = "palette-help";
+    brightnessValue.textContent = String(clamp255(state.rgbBrightnessByKey[active.key]));
+
+    brightnessSlider.oninput = () => {
+      const nextBrightness = clamp255(brightnessSlider.value);
+      state.rgbBrightnessByKey[active.key] = nextBrightness;
+      brightnessValue.textContent = String(nextBrightness);
+      state.paletteFeatureValues[active.key] = applyRgbBrightness(
+        state.rgbBaseColorByKey[active.key],
+        nextBrightness,
+      );
+      const [r, g, b] = state.paletteFeatureValues[active.key];
+      color.value = `#${[r, g, b].map((v) => clamp255(v).toString(16).padStart(2, "0")).join("")}`;
+    };
+
+    brightnessControl.appendChild(brightnessSlider);
+    brightnessControl.appendChild(brightnessValue);
+    brightnessWrap.appendChild(brightnessLabel);
+    brightnessWrap.appendChild(brightnessControl);
+    card.appendChild(brightnessWrap);
+
     const color = document.createElement("input");
     color.type = "color";
     const [r, g, b] = values;
     color.value = `#${[r, g, b].map((v) => clamp255(v).toString(16).padStart(2, "0")).join("")}`;
     color.oninput = () => {
       const hex = color.value.replace("#", "");
-      state.paletteFeatureValues[active.key] = [
+      state.rgbBaseColorByKey[active.key] = [
         parseInt(hex.slice(0, 2), 16),
         parseInt(hex.slice(2, 4), 16),
         parseInt(hex.slice(4, 6), 16),
       ];
+      state.paletteFeatureValues[active.key] = applyRgbBrightness(
+        state.rgbBaseColorByKey[active.key],
+        state.rgbBrightnessByKey[active.key],
+      );
     };
-    card.appendChild(color);
+
+    if (state.drawTool === "pencil") {
+      const presetsWrap = document.createElement("div");
+      presetsWrap.className = "color-presets";
+
+      for (const preset of state.colorPresets) {
+        const presetBtn = document.createElement("button");
+        presetBtn.type = "button";
+        presetBtn.className = "color-preset-btn";
+
+        const swatch = document.createElement("span");
+        swatch.className = "color-preset-swatch";
+        swatch.style.background = `rgb(${preset.rgb[0]}, ${preset.rgb[1]}, ${preset.rgb[2]})`;
+
+        const label = document.createElement("span");
+        label.className = "color-preset-label";
+        label.textContent = preset.name;
+
+        presetBtn.appendChild(swatch);
+        presetBtn.appendChild(label);
+        presetBtn.onclick = () => {
+          state.rgbBaseColorByKey[active.key] = [...preset.rgb];
+          state.paletteFeatureValues[active.key] = applyRgbBrightness(
+            state.rgbBaseColorByKey[active.key],
+            state.rgbBrightnessByKey[active.key],
+          );
+          const [pr, pg, pb] = state.paletteFeatureValues[active.key];
+          color.value = `#${[pr, pg, pb].map((v) => clamp255(v).toString(16).padStart(2, "0")).join("")}`;
+        };
+
+        presetsWrap.appendChild(presetBtn);
+      }
+
+      card.appendChild(presetsWrap);
+    }
+
+    const customWrap = document.createElement("div");
+    customWrap.className = "custom-color-row";
+    const customLabel = document.createElement("span");
+    customLabel.className = "palette-help";
+    customLabel.textContent = "Custom";
+    customWrap.appendChild(customLabel);
+    customWrap.appendChild(color);
+    card.appendChild(customWrap);
   } else {
     for (let i = 0; i < active.feature.channels.length; i += 1) {
       const row = document.createElement("label");
@@ -606,7 +748,12 @@ function samplePaletteFromCell(fixtureId, stepIndex) {
   const values = frameValueToArray(frame.value).slice(0, feature.channels.length);
 
   while (values.length < feature.channels.length) values.push(0);
-  state.paletteFeatureValues[key] = values.map((value) => clamp255(value));
+  const nextValues = values.map((value) => clamp255(value));
+  state.paletteFeatureValues[key] = nextValues;
+  if (feature.kind === "rgb") {
+    state.rgbBaseColorByKey[key] = [...nextValues];
+    state.rgbBrightnessByKey[key] = 255;
+  }
   return true;
 }
 
@@ -1098,3 +1245,4 @@ ws.onmessage = (message) => {
 
 updatePlayPauseLabel();
 updateTapSyncUi();
+loadColorPresets().then(() => renderPalette());

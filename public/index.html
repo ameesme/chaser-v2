@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>chaser-v2</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -18,16 +18,18 @@
           <button id="blackoutBtn">Blackout</button>
           <label><input id="loopInput" type="checkbox" checked /> Loop</label>
           <span class="toolbar-sep" aria-hidden="true">|</span>
-          <button id="tapSyncBtn">Tap</button>
-          <label>SPM <input id="spmInput" type="number" min="1" max="500" step="1" value="120" /></label>
-          <select id="spmMultiplierSelect">
-            <option value="1">1x</option>
-            <option value="2">2x</option>
-            <option value="4">4x</option>
-          </select>
-          <label><input id="lockSpmInput" type="checkbox" /> Lock</label>
-          <span class="toolbar-sep" aria-hidden="true">|</span>
-          <label>Fade <input id="fadeMsInput" type="number" min="0" max="10000" step="10" value="300" /></label>
+          <div class="tempo-row">
+            <button id="tapSyncBtn">Tap</button>
+            <label>SPM <input id="spmInput" type="number" min="1" max="500" step="1" value="120" /></label>
+            <select id="spmMultiplierSelect">
+              <option value="1">1x</option>
+              <option value="2">2x</option>
+              <option value="4">4x</option>
+            </select>
+            <label><input id="lockSpmInput" type="checkbox" /> Lock</label>
+            <span class="toolbar-sep" aria-hidden="true">|</span>
+            <label>Fade <input id="fadeMsInput" type="number" min="0" max="10000" step="10" value="300" /></label>
+          </div>
         </div>
 
         <div class="toolbar-right">

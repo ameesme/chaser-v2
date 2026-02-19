@@ -1,0 +1,14 @@
+[
+  { "name": "Red", "rgb": [255, 0, 0] },
+  { "name": "Green", "rgb": [0, 255, 0] },
+  { "name": "Blue", "rgb": [0, 0, 255] },
+  { "name": "Warm White", "rgb": [255, 214, 170] },
+  { "name": "Cold White", "rgb": [200, 228, 255] },
+  { "name": "Amber", "rgb": [255, 128, 0] },
+  { "name": "Magenta", "rgb": [255, 0, 180] },
+  { "name": "Cyan", "rgb": [0, 220, 255] },
+  { "name": "Lime", "rgb": [170, 255, 0] },
+  { "name": "Deep Blue", "rgb": [30, 40, 255] },
+  { "name": "Sunset", "rgb": [255, 90, 40] },
+  { "name": "Violet", "rgb": [165, 90, 255] }
+]

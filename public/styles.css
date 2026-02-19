@@ -17,6 +17,7 @@ body {
   font-family: "Courier New", Courier, monospace;
   overflow: hidden;
   user-select: none;
+  touch-action: none;
 }
 
 input,
@@ -42,6 +43,16 @@ textarea {
 
 .toolbar-left,
 .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-left {
+  flex-wrap: wrap;
+}
+
+.tempo-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -229,6 +240,44 @@ input:hover {
   font-size: 11px;
 }
 
+.color-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 6px;
+}
+
+.color-preset-btn {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  padding: 6px;
+}
+
+.color-preset-swatch {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #1f1f1f;
+}
+
+.color-preset-label {
+  font-size: 11px;
+}
+
+.custom-color-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.custom-color-row input[type="color"] {
+  width: 44px;
+  height: 30px;
+  padding: 2px;
+}
+
 .feature-input-row {
   display: grid;
   grid-template-columns: 90px 1fr;
@@ -275,7 +324,23 @@ input:hover {
     align-items: stretch;
   }
 
+  .tempo-row {
+    flex-basis: 100%;
+  }
+
   .toolbar-right {
     margin-left: 0;
+  }
+
+  .toolbar-sep {
+    display: none;
+  }
+
+  .state-box {
+    display: none;
+  }
+
+  .visual-pane {
+    grid-template-rows: 1fr;
   }
 }
