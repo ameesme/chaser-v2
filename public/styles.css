@@ -1,0 +1,281 @@
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --muted: #a8a8a8;
+  --line: #2b2b2b;
+  --cell-size: 34px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Courier New", Courier, monospace;
+  overflow: hidden;
+  user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+}
+
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  overflow-x: auto;
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-sep {
+  align-self: stretch;
+  width: 0;
+  border-left: 1px solid var(--muted);
+  display: block;
+  margin: 0 4px;
+  margin-top: -10px;
+  margin-bottom: -10px;
+  font-size: 0;
+}
+
+.toolbar-right {
+  margin-left: auto;
+}
+
+.workspace {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
+.piano-pane,
+.visual-pane {
+  min-width: 0;
+  min-height: 0;
+}
+
+.piano-pane {
+  border-right: 1px solid var(--line);
+  padding: 10px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+}
+
+.visual-pane {
+  padding: 10px;
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+}
+
+button,
+select,
+input {
+  background: #0b0b0b;
+  color: var(--fg);
+  border: 1px solid var(--line);
+  padding: 8px;
+}
+
+button:hover,
+select:hover,
+input:hover {
+  border-color: var(--fg);
+}
+
+#spmInput {
+  width: 88px;
+}
+
+#fadeMsInput {
+  width: 88px;
+}
+
+#stepCountInput {
+  width: 78px;
+}
+
+#programNameInput {
+  width: 160px;
+}
+
+.matrix-wrap {
+  border: 1px solid var(--line);
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.step-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  width: max-content;
+}
+
+.matrix-cell {
+  background: #050505;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+}
+
+.matrix-cell.header {
+  font-weight: bold;
+  color: var(--muted);
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: #0a0a0a;
+  cursor: pointer;
+}
+
+.matrix-cell.fixture-name {
+  justify-content: start;
+  padding-left: 10px;
+  min-width: 190px;
+  width: 190px;
+  height: var(--cell-size);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: #0a0a0a;
+}
+
+.matrix-cell.header.fixture-name {
+  z-index: 4;
+  cursor: default;
+}
+
+.matrix-cell.keyframe {
+  cursor: crosshair;
+}
+
+.matrix-cell.keyframe.selected,
+.matrix-cell.keyframe.painting {
+  outline: 1px solid var(--fg);
+  outline-offset: -1px;
+}
+
+.matrix-cell.keyframe.playhead,
+.matrix-cell.header.playhead {
+  background: #181818;
+}
+
+.palette {
+  border: 1px solid var(--line);
+  padding: 8px;
+  overflow: auto;
+  max-height: 36vh;
+  display: grid;
+  gap: 8px;
+}
+
+.palette-title {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.palette-feature {
+  border: 1px solid var(--line);
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.palette-feature-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-tool {
+  border-color: var(--fg);
+  background: #1a1a1a;
+}
+
+.palette-feature-name {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.palette-help {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.feature-input-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature-input-row input {
+  width: 100%;
+}
+
+.simulator {
+  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.room-canvas {
+  display: block;
+  border: 1px solid #1a1a1a;
+  background: #020202;
+}
+
+.state-box {
+  border: 1px solid var(--line);
+  margin: 0;
+  padding: 10px;
+  color: var(--muted);
+  min-height: 110px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+@media (max-width: 980px) {
+  .workspace {
+    grid-template-columns: 1fr;
+    grid-template-rows: 2fr 1fr;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-right {
+    margin-left: 0;
+  }
+}

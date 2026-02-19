@@ -1,0 +1,136 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import Fastify from "fastify";
+import cors from "@fastify/cors";
+import websocket from "@fastify/websocket";
+import staticPlugin from "@fastify/static";
+import { loadRuntimeConfig } from "./config/load-config.js";
+import { ProgramStore } from "./core/program-store.js";
+import { Sequencer } from "./core/sequencer.js";
+import { Renderer } from "./core/renderer.js";
+import { buildRenderPacket } from "./core/render-packet.js";
+import { SimulatorOutput } from "./outputs/simulator-output.js";
+import { ArtnetOutput } from "./outputs/artnet-output.js";
+import { MqttOutput } from "./outputs/mqtt-output.js";
+import { registerRoutes } from "./api/routes.js";
+import { WsHub } from "./ws/hub.js";
+import type { ClientEvent, ServerEvent } from "./ws/protocol.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+type WebSocketLike = {
+  send: (payload: string) => void;
+};
+
+type ConnectionLike = { socket: WebSocketLike } | WebSocketLike;
+
+function connectionSocket(connection: ConnectionLike): WebSocketLike {
+  return "socket" in connection ? connection.socket : connection;
+}
+
+async function buildServer() {
+  const config = await loadRuntimeConfig();
+
+  const app = Fastify({ logger: true });
+  await app.register(cors, { origin: true });
+  await app.register(websocket);
+  await app.register(staticPlugin, {
+    root: resolve(__dirname, "..", "public"),
+  });
+
+  const programStore = new ProgramStore(config.programs);
+  const sequencer = new Sequencer();
+  const wsHub = new WsHub();
+
+  const simulatorOutput = new SimulatorOutput();
+  const renderer = new Renderer([simulatorOutput, new ArtnetOutput(), new MqttOutput()]);
+
+  const applyProgram = (programId: string): void => {
+    const program = programStore.get(programId);
+    if (!program) return;
+    sequencer.setProgram(program);
+    const environment = config.environments.find((item) => item.id === program.environmentId);
+    sequencer.setFrameRate(environment?.renderFps ?? 30);
+  };
+
+  sequencer.subscribe((frame) => {
+    wsHub.broadcast({ type: "frame", payload: frame });
+
+    const programId = frame.state.programId;
+    if (!programId) return;
+    const program = programStore.get(programId);
+    if (!program) return;
+
+    const packet = buildRenderPacket(frame, config, program.environmentId);
+    if (!packet) return;
+    renderer.render(packet);
+  });
+
+  simulatorOutput.subscribe((packet) => {
+    wsHub.broadcast({ type: "state", payload: packet.frame.state });
+  });
+
+  await registerRoutes(app, { config, programStore, sequencer, wsHub });
+
+  app.get("/ws", { websocket: true }, (connection) => {
+    wsHub.addClient(connection, (event: ClientEvent) => {
+      switch (event.type) {
+        case "play":
+          sequencer.play();
+          break;
+        case "pause":
+          sequencer.pause();
+          break;
+        case "next":
+          sequencer.nextStep();
+          break;
+        case "previous":
+          sequencer.previousStep();
+          break;
+        case "seek":
+          sequencer.setStep(event.payload.stepIndex);
+          break;
+        case "blackout":
+          sequencer.setBlackout(event.payload.enabled);
+          break;
+        case "tempo":
+          sequencer.setSpm(event.payload.spm);
+          break;
+        case "loop":
+          sequencer.setLoop(event.payload.enabled);
+          break;
+        case "program": {
+          applyProgram(event.payload.programId);
+          break;
+        }
+      }
+    });
+
+    wsHub.broadcast({ type: "programs", payload: programStore.list() });
+    wsHub.broadcast({
+      type: "config",
+      payload: { fixtures: config.fixtures, environments: config.environments },
+    });
+    wsHub.broadcast({ type: "state", payload: sequencer.getState() });
+
+    const socket = connectionSocket(connection as ConnectionLike);
+    const initialFrameEvent: ServerEvent = { type: "frame", payload: sequencer.getFrame() };
+    socket.send(JSON.stringify(initialFrameEvent));
+  });
+
+  const defaultProgram = programStore.list()[0];
+  if (defaultProgram) {
+    applyProgram(defaultProgram.id);
+  }
+
+  app.get("/", async (_, reply) => {
+    return reply.sendFile("index.html");
+  });
+
+  return app;
+}
+
+const port = Number(process.env.PORT ?? 3000);
+const app = await buildServer();
+await app.listen({ port, host: "0.0.0.0" });
