@@ -1,13 +1,17 @@
 const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
+const debugSyncParam = new URLSearchParams(location.search).get("debugSync");
+if (debugSyncParam === "1") localStorage.setItem("debugSync", "1");
+if (debugSyncParam === "0") localStorage.removeItem("debugSync");
+const DEBUG_SYNC = localStorage.getItem("debugSync") === "1";
 
 const CELL_PX = 34;
 const FIXTURE_LABEL_WIDTH = 190;
 const TAP_RESET_IDLE_MS = 2000;
+const MOBILE_BREAKPOINT_PX = 980;
 
 const programSelect = document.getElementById("programSelect");
-const programNameInput = document.getElementById("programNameInput");
 const createProgramBtn = document.getElementById("createProgramBtn");
-const stepCountInput = document.getElementById("stepCountInput");
+const deleteProgramBtn = document.getElementById("deleteProgramBtn");
 const seekStartBtn = document.getElementById("seekStartBtn");
 const playPauseBtn = document.getElementById("playPauseBtn");
 const prevBtn = document.getElementById("prevBtn");
@@ -20,12 +24,14 @@ const lockSpmInput = document.getElementById("lockSpmInput");
 const spmInput = document.getElementById("spmInput");
 const spmMultiplierSelect = document.getElementById("spmMultiplierSelect");
 const fadeMsInput = document.getElementById("fadeMsInput");
+const mobileTabPlaybackBtn = document.getElementById("mobileTabPlaybackBtn");
+const mobileTabSequencerBtn = document.getElementById("mobileTabSequencerBtn");
+const mobileProgramGrid = document.getElementById("mobileProgramGrid");
 
 const stepGrid = document.getElementById("stepGrid");
 const palette = document.getElementById("palette");
 const simulator = document.getElementById("simulator");
 const roomCanvas = document.getElementById("roomCanvas");
-const stateBox = document.getElementById("stateBox");
 
 const canvas = /** @type {HTMLCanvasElement} */ (roomCanvas);
 const ctx = canvas.getContext("2d");
@@ -54,10 +60,14 @@ const state = {
   saveInFlight: false,
   savePending: false,
   saveTimerId: null,
+  liveSyncTimerId: null,
+  editVersion: 0,
+  lastSavedVersion: 0,
   tapSyncActive: false,
   tapSyncSpm: null,
   tapTimesMs: [],
   lockedSpm: null,
+  mobileTab: localStorage.getItem("mobileTab") === "sequencer" ? "sequencer" : "playback",
 };
 
 const defaultColorPresets = [
@@ -69,7 +79,40 @@ const defaultColorPresets = [
 ];
 
 function send(event) {
+  if (DEBUG_SYNC) console.debug("[sync-debug] send", event.type, event.payload ?? null);
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(event));
+}
+
+function isMobileLayout() {
+  return window.innerWidth <= MOBILE_BREAKPOINT_PX;
+}
+
+function applyMobileTabUi() {
+  document.body.classList.remove("mobile-tab-playback", "mobile-tab-sequencer");
+  if (!isMobileLayout()) return;
+  if (state.mobileTab !== "sequencer") state.mobileTab = "playback";
+  document.body.classList.add(
+    state.mobileTab === "sequencer" ? "mobile-tab-sequencer" : "mobile-tab-playback",
+  );
+}
+
+function setMobileTab(tab) {
+  state.mobileTab = tab === "sequencer" ? "sequencer" : "playback";
+  localStorage.setItem("mobileTab", state.mobileTab);
+  applyMobileTabUi();
+}
+
+function markProgramDirty() {
+  state.editVersion += 1;
+}
+
+function summarizeProgramFrames(program, stepIndex) {
+  const steps = Array.isArray(program?.steps) ? program.steps : [];
+  let totalFrames = 0;
+  for (const step of steps) totalFrames += Array.isArray(step.frames) ? step.frames.length : 0;
+  const step = steps[Math.max(0, Math.min(steps.length - 1, stepIndex))];
+  const stepFrames = Array.isArray(step?.frames) ? step.frames.length : 0;
+  return { totalFrames, stepFrames };
 }
 
 async function loadColorPresets() {
@@ -161,12 +204,6 @@ function normalizeName(name) {
   return name.trim().replace(/\s+/g, " ");
 }
 
-function clampStepCount(value) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return 1;
-  return Math.max(1, Math.min(1000, Math.floor(parsed)));
-}
-
 function clampFadeMs(value) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 0;
@@ -189,8 +226,26 @@ function effectiveSpmFromBase(baseSpm) {
   return clampSpm(clampSpm(baseSpm) * currentSpmMultiplier());
 }
 
+function isLockSpmEnabled() {
+  return lockSpmInput.classList.contains("active-tool");
+}
+
+function setLockSpmEnabled(enabled) {
+  lockSpmInput.classList.toggle("active-tool", Boolean(enabled));
+  lockSpmInput.setAttribute("aria-pressed", String(Boolean(enabled)));
+}
+
+function isLoopEnabled() {
+  return loopInput.classList.contains("active-tool");
+}
+
+function setLoopEnabled(enabled) {
+  loopInput.classList.toggle("active-tool", Boolean(enabled));
+  loopInput.setAttribute("aria-pressed", String(Boolean(enabled)));
+}
+
 function effectiveSpmForControls(program) {
-  if (lockSpmInput.checked && state.lockedSpm !== null) {
+  if (isLockSpmEnabled() && state.lockedSpm !== null) {
     return state.lockedSpm;
   }
   if (state.tapSyncActive && state.tapSyncSpm !== null) {
@@ -200,7 +255,7 @@ function effectiveSpmForControls(program) {
 }
 
 function isLockedSpmActive() {
-  return lockSpmInput.checked && state.lockedSpm !== null;
+  return isLockSpmEnabled() && state.lockedSpm !== null;
 }
 
 function enforceLockedSpm() {
@@ -214,7 +269,7 @@ function setTapSyncSpm(spm) {
   const clamped = clampSpm(spm);
   state.tapSyncSpm = clamped;
   state.tapSyncActive = true;
-  if (lockSpmInput.checked) {
+  if (isLockSpmEnabled()) {
     state.lockedSpm = clamped;
   }
   return clamped;
@@ -224,7 +279,7 @@ function clearTapSync() {
   state.tapSyncActive = false;
   state.tapSyncSpm = null;
   state.tapTimesMs = [];
-  if (!lockSpmInput.checked) {
+  if (!isLockSpmEnabled()) {
     state.lockedSpm = null;
   }
 }
@@ -273,39 +328,46 @@ function handleTapSync() {
   applySpmOverride(computedSpm, true);
 }
 
-function applyStepCountToProgram() {
+function addStepToProgram() {
   const program = selectedProgram();
   if (!program) return false;
+  const index = program.steps.length;
+  const prev = index > 0 ? program.steps[index - 1] : null;
+  program.steps.push({
+    id: `step-${index + 1}`,
+    durationMs: prev?.durationMs ?? 500,
+    fadeMs: prev?.fadeMs ?? 300,
+    frames: [],
+  });
+  state.timelineSteps = Math.max(1, program.steps.length);
+  return true;
+}
 
-  const target = clampStepCount(stepCountInput.value);
-  const before = program.steps.length;
-  state.timelineSteps = target;
-  stepCountInput.value = String(target);
+function removeStepFromProgram(stepIndex) {
+  const program = selectedProgram();
+  if (!program) return false;
+  if (program.steps.length <= 1) return false;
+  if (stepIndex < 0 || stepIndex >= program.steps.length) return false;
 
-  while (program.steps.length < target) {
-    const index = program.steps.length;
-    const prev = index > 0 ? program.steps[index - 1] : null;
-    program.steps.push({
-      id: `step-${index + 1}`,
-      durationMs: prev?.durationMs ?? 500,
-      fadeMs: prev?.fadeMs ?? 300,
-      frames: [],
-    });
+  program.steps.splice(stepIndex, 1);
+  for (let i = 0; i < program.steps.length; i += 1) {
+    program.steps[i].id = `step-${i + 1}`;
   }
 
-  if (program.steps.length > target) {
-    program.steps = program.steps.slice(0, target);
-    if (state.currentPlayheadStep >= target) {
-      state.currentPlayheadStep = target - 1;
-      send({ type: "seek", payload: { stepIndex: target - 1 } });
-    }
+  state.timelineSteps = Math.max(1, program.steps.length);
+  if (state.currentPlayheadStep >= program.steps.length) {
+    state.currentPlayheadStep = Math.max(0, program.steps.length - 1);
+    send({ type: "seek", payload: { stepIndex: state.currentPlayheadStep } });
   }
-
-  return before !== program.steps.length;
+  return true;
 }
 
 function updatePlayPauseLabel() {
   playPauseBtn.textContent = state.isPlaying ? "Pause" : "Play";
+}
+
+function updateBlackoutUi() {
+  blackoutBtn.classList.toggle("active-tool", state.isBlackout);
 }
 
 function fillProgramSelect() {
@@ -330,15 +392,55 @@ function fillProgramSelect() {
 
   programSelect.value = state.selectedProgramId || "";
   const program = selectedProgram();
-  programNameInput.value = program?.name ?? "";
   if (program) state.timelineSteps = Math.max(1, program.steps.length || 1);
-  loopInput.checked = Boolean(program?.loop ?? true);
+  setLoopEnabled(Boolean(program?.loop ?? true));
   const effectiveSpm = effectiveSpmForControls(program);
   spmInput.value = String(effectiveSpm);
   const fadeMs = clampFadeMs(program?.steps?.[0]?.fadeMs ?? 300);
   fadeMsInput.value = String(fadeMs);
-  stepCountInput.value = String(state.timelineSteps);
   updateTapSyncUi();
+  renderMobileProgramGrid();
+}
+
+function renderMobileProgramGrid() {
+  if (!mobileProgramGrid) return;
+  mobileProgramGrid.innerHTML = "";
+  for (const program of state.programs) {
+    const button = document.createElement("button");
+    button.className = "mobile-program-btn";
+    if (program.id === state.selectedProgramId) button.classList.add("active");
+    button.textContent = program.name;
+    button.onclick = () => selectProgram(program.id);
+    mobileProgramGrid.appendChild(button);
+  }
+}
+
+function selectProgram(programId) {
+  state.selectedProgramId = programId;
+  const program = selectedProgram();
+  if (!program) return;
+  programSelect.value = program.id;
+
+  if (!isLockSpmEnabled() && state.tapSyncActive) {
+    deactivateTapSync();
+  }
+
+  state.timelineSteps = Math.max(1, program.steps.length || 1);
+  setLoopEnabled(Boolean(program.loop ?? true));
+  const effectiveSpm = effectiveSpmForControls(program);
+  spmInput.value = String(effectiveSpm);
+  fadeMsInput.value = String(clampFadeMs(program.steps?.[0]?.fadeMs ?? 300));
+  state.currentPlayheadStep = 0;
+  renderPalette();
+  renderStepGrid();
+  renderMobileProgramGrid();
+  if (state.lastFrame) drawSimulator(state.lastFrame);
+  send({ type: "program", payload: { programId: program.id } });
+  if (isLockedSpmActive()) {
+    requestAnimationFrame(() => enforceLockedSpm());
+  } else {
+    send({ type: "tempo", payload: { spm: effectiveSpmFromBase(effectiveSpm) } });
+  }
 }
 
 function layoutRoomCanvas(environment) {
@@ -409,8 +511,6 @@ function drawSimulator(frame) {
   ctx.clearRect(0, 0, state.canvasWidthCss, state.canvasHeightCss);
   ctx.fillStyle = "#020202";
   ctx.fillRect(0, 0, state.canvasWidthCss, state.canvasHeightCss);
-  ctx.strokeStyle = "#1a1a1a";
-  ctx.strokeRect(0.5, 0.5, state.canvasWidthCss - 1, state.canvasHeightCss - 1);
 
   for (const fixture of environment.fixtures) {
     const def = fixtureDefinition(fixture.fixtureTypeId);
@@ -484,11 +584,6 @@ function featureOptions() {
 function renderPalette() {
   palette.innerHTML = "";
 
-  const title = document.createElement("div");
-  title.className = "palette-title";
-  title.textContent = "Palette";
-  palette.appendChild(title);
-
   const options = featureOptions();
   if (options.length === 0) return;
 
@@ -496,8 +591,11 @@ function renderPalette() {
     state.selectedPaletteKey = options[0].key;
   }
 
+  const layout = document.createElement("div");
+  layout.className = "palette-layout";
+
   const tools = document.createElement("div");
-  tools.className = "palette-feature-head";
+  tools.className = "palette-modes";
   const pencilBtn = document.createElement("button");
   pencilBtn.textContent = "Pencil";
   const eraserBtn = document.createElement("button");
@@ -525,7 +623,14 @@ function renderPalette() {
   tools.appendChild(pencilBtn);
   tools.appendChild(eraserBtn);
   tools.appendChild(pickerBtn);
-  palette.appendChild(tools);
+  layout.appendChild(tools);
+
+  const config = document.createElement("div");
+  config.className = "palette-config";
+  layout.appendChild(config);
+  palette.appendChild(layout);
+
+  if (state.drawTool !== "pencil") return;
 
   const select = document.createElement("select");
   const groupedOptions = new Map();
@@ -551,7 +656,7 @@ function renderPalette() {
     state.selectedPaletteKey = select.value;
     renderPalette();
   };
-  palette.appendChild(select);
+  config.appendChild(select);
 
   const active = options.find((option) => option.key === state.selectedPaletteKey);
   if (!active) return;
@@ -715,7 +820,7 @@ function renderPalette() {
     }
   }
 
-  palette.appendChild(card);
+  config.appendChild(card);
 }
 
 function activePaletteOption() {
@@ -839,21 +944,42 @@ function renderStepGrid() {
   if (!program || !environment) return;
 
   const stepCount = state.timelineSteps;
-  stepGrid.style.gridTemplateColumns = `${FIXTURE_LABEL_WIDTH}px repeat(${stepCount}, ${CELL_PX}px)`;
+  stepGrid.style.gridTemplateColumns = `${FIXTURE_LABEL_WIDTH}px repeat(${stepCount + 1}, ${CELL_PX}px)`;
 
   const topLeft = document.createElement("div");
   topLeft.className = "matrix-cell header fixture-name";
-  topLeft.textContent = "Fixture";
+  topLeft.textContent = "";
   stepGrid.appendChild(topLeft);
 
   for (let i = 0; i < stepCount; i += 1) {
     const header = document.createElement("div");
-    header.className = "matrix-cell header";
+    header.className = "matrix-cell header step-header";
     header.textContent = String(i + 1);
     if (i === state.currentPlayheadStep) header.classList.add("playhead");
+    header.title = stepCount > 1 ? "Click: go to step | Right-click: delete step" : "Click: go to step";
     header.onclick = () => send({ type: "seek", payload: { stepIndex: i } });
+    header.oncontextmenu = (event) => {
+      event.preventDefault();
+      if (stepCount <= 1) return;
+      if (!removeStepFromProgram(i)) return;
+      markProgramDirty();
+      renderStepGrid();
+      scheduleAutoSave();
+    };
     stepGrid.appendChild(header);
   }
+
+  const addHeader = document.createElement("div");
+  addHeader.className = "matrix-cell header step-add";
+  addHeader.textContent = "+";
+  addHeader.title = "Add step";
+  addHeader.onclick = () => {
+    if (!addStepToProgram()) return;
+    markProgramDirty();
+    renderStepGrid();
+    scheduleAutoSave();
+  };
+  stepGrid.appendChild(addHeader);
 
   for (const fixture of environment.fixtures) {
     const fixtureDef = fixtureDefinition(fixture.fixtureTypeId);
@@ -887,6 +1013,19 @@ function renderStepGrid() {
         }
 
         updateCellPreview(cell, fixture.id, stepIndex, def);
+        if (DEBUG_SYNC) {
+          console.debug("[sync-debug] paint", {
+            fixtureId: fixture.id,
+            stepIndex,
+            currentPlayheadStep: state.currentPlayheadStep,
+            drawTool: state.drawTool,
+            changed,
+          });
+        }
+        if (stepIndex === state.currentPlayheadStep) {
+          scheduleLiveSync();
+        }
+        markProgramDirty();
         scheduleAutoSave();
       };
 
@@ -907,10 +1046,22 @@ function renderStepGrid() {
 
       stepGrid.appendChild(cell);
     }
+
+    const pad = document.createElement("div");
+    pad.className = "matrix-cell";
+    stepGrid.appendChild(pad);
   }
 }
 
 function updateSimulator(frame) {
+  if (DEBUG_SYNC && state.currentPlayheadStep !== frame?.state?.stepIndex) {
+    console.debug("[sync-debug] frame step mismatch", {
+      uiStep: state.currentPlayheadStep,
+      serverStep: frame?.state?.stepIndex,
+      runningProgramId: state.runningProgramId,
+      selectedProgramId: state.selectedProgramId,
+    });
+  }
   state.lastFrame = frame;
   state.runningProgramId = frame?.state?.programId ?? state.runningProgramId;
   drawSimulator(frame);
@@ -924,16 +1075,24 @@ function updateSimulator(frame) {
     state.isPlaying = frame.state.isPlaying;
     updatePlayPauseLabel();
   }
-
-  stateBox.textContent = JSON.stringify(frame.state, null, 2);
 }
 
 async function saveProgramNow() {
   const program = selectedProgram();
   if (!program) return;
-
-  const normalized = normalizeName(programNameInput.value);
-  if (normalized) program.name = normalized;
+  const targetVersion = state.editVersion;
+  if (DEBUG_SYNC) {
+    const frameSummary = summarizeProgramFrames(program, state.currentPlayheadStep);
+    console.debug("[sync-debug] save start", {
+      selectedProgramId: state.selectedProgramId,
+      runningProgramId: state.runningProgramId,
+      stepIndex: state.currentPlayheadStep,
+      steps: program.steps.length,
+      totalFrames: frameSummary.totalFrames,
+      stepFrames: frameSummary.stepFrames,
+      targetVersion,
+    });
+  }
 
   const response = await fetch(`/api/programs/${program.id}`, {
     method: "PUT",
@@ -947,14 +1106,20 @@ async function saveProgramNow() {
   }
 
   const updated = await response.json();
-  const index = state.programs.findIndex((item) => item.id === updated.id);
-  if (index >= 0) state.programs[index] = updated;
-  programNameInput.value = updated.name;
-
-  send({ type: "seek", payload: { stepIndex: state.currentPlayheadStep } });
+  state.lastSavedVersion = Math.max(state.lastSavedVersion, targetVersion);
+  if (DEBUG_SYNC) {
+    console.debug("[sync-debug] save done", {
+      updatedProgramId: updated.id,
+      stepIndex: state.currentPlayheadStep,
+      steps: updated.steps.length,
+      lastSavedVersion: state.lastSavedVersion,
+      editVersion: state.editVersion,
+    });
+  }
 }
 
 async function queueAutoSave() {
+  if (state.editVersion === state.lastSavedVersion) return;
   if (state.saveInFlight) {
     state.savePending = true;
     return;
@@ -963,11 +1128,14 @@ async function queueAutoSave() {
   state.saveInFlight = true;
   try {
     await saveProgramNow();
-  } catch {
+  } catch (error) {
+    if (DEBUG_SYNC) {
+      console.debug("[sync-debug] save error", error);
+    }
     // Do not block editing on save errors.
   } finally {
     state.saveInFlight = false;
-    if (state.savePending) {
+    if (state.savePending || state.editVersion !== state.lastSavedVersion) {
       state.savePending = false;
       scheduleAutoSave();
     }
@@ -984,12 +1152,26 @@ function scheduleAutoSave() {
   }, 1000);
 }
 
+function scheduleLiveSync() {
+  if (state.liveSyncTimerId) return;
+  state.liveSyncTimerId = setTimeout(() => {
+    state.liveSyncTimerId = null;
+    if (DEBUG_SYNC) {
+      console.debug("[sync-debug] live sync flush", {
+        stepIndex: state.currentPlayheadStep,
+        selectedProgramId: state.selectedProgramId,
+      });
+    }
+    queueAutoSave();
+  }, 120);
+}
+
 async function createProgram() {
   const baseProgram = selectedProgram();
   if (!baseProgram) return;
-  applyStepCountToProgram();
-
-  const name = normalizeName(programNameInput.value) || "New Program";
+  const promptName = window.prompt("Program name", "New Program");
+  if (promptName === null) return;
+  const name = normalizeName(promptName) || "New Program";
   const idBase = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "program";
   const program = {
     id: `${idBase}-${Date.now()}`,
@@ -997,7 +1179,7 @@ async function createProgram() {
     environmentId: baseProgram.environmentId,
     spm: baseProgram.spm ?? 120,
     loop: typeof baseProgram.loop === "boolean" ? baseProgram.loop : true,
-    steps: Array.from({ length: state.timelineSteps }, (_, index) => ({
+    steps: Array.from({ length: Math.max(1, state.timelineSteps) }, (_, index) => ({
       id: `step-${index + 1}`,
       durationMs: 500,
       fadeMs: clampFadeMs(fadeMsInput.value),
@@ -1028,9 +1210,36 @@ async function createProgram() {
   send({ type: "program", payload: { programId: created.id } });
 }
 
+async function deleteProgram() {
+  const program = selectedProgram();
+  if (!program) return;
+  if (state.programs.length <= 1) {
+    alert("Cannot delete the last program.");
+    return;
+  }
+  const confirmed = window.confirm(`Delete program "${program.name}"?`);
+  if (!confirmed) return;
+
+  const response = await fetch(`/api/programs/${program.id}`, { method: "DELETE" });
+  if (!response.ok) {
+    alert("Failed to delete program");
+    return;
+  }
+
+  const fallback = state.programs.find((item) => item.id !== program.id);
+  if (fallback) {
+    state.selectedProgramId = fallback.id;
+    fillProgramSelect();
+    renderPalette();
+    renderStepGrid();
+    send({ type: "program", payload: { programId: fallback.id } });
+  }
+}
+
 function applyPrograms(programs) {
   state.programs = programs;
   fillProgramSelect();
+  renderMobileProgramGrid();
   renderStepGrid();
   if (state.lastFrame) drawSimulator(state.lastFrame);
 }
@@ -1072,6 +1281,7 @@ seekEndBtn.onclick = () => send({ type: "seek", payload: { stepIndex: Math.max(0
 blackoutBtn.onclick = () => {
   state.isBlackout = !state.isBlackout;
   send({ type: "blackout", payload: { enabled: state.isBlackout } });
+  updateBlackoutUi();
 };
 
 spmInput.oninput = () => {
@@ -1081,6 +1291,7 @@ spmInput.oninput = () => {
   const program = selectedProgram();
   if (program) {
     program.spm = baseSpm;
+    markProgramDirty();
     scheduleAutoSave();
   }
   send({ type: "tempo", payload: { spm: effectiveSpmFromBase(baseSpm) } });
@@ -1106,14 +1317,19 @@ fadeMsInput.onchange = () => {
       changed = true;
     }
   }
-  if (changed) scheduleAutoSave();
+  if (changed) {
+    markProgramDirty();
+    scheduleAutoSave();
+  }
 };
 
-loopInput.onchange = () => {
-  const enabled = Boolean(loopInput.checked);
+loopInput.onclick = () => {
+  const enabled = !isLoopEnabled();
+  setLoopEnabled(enabled);
   const program = selectedProgram();
   if (program) {
     program.loop = enabled;
+    markProgramDirty();
     scheduleAutoSave();
   }
   send({ type: "loop", payload: { enabled } });
@@ -1123,8 +1339,10 @@ tapSyncBtn.onclick = () => {
   handleTapSync();
 };
 
-lockSpmInput.onchange = () => {
-  if (lockSpmInput.checked) {
+lockSpmInput.onclick = () => {
+  const enabled = !isLockSpmEnabled();
+  setLockSpmEnabled(enabled);
+  if (enabled) {
     if (state.tapSyncSpm !== null) {
       state.lockedSpm = state.tapSyncSpm;
       enforceLockedSpm();
@@ -1135,64 +1353,16 @@ lockSpmInput.onchange = () => {
 };
 
 programSelect.onchange = () => {
-  state.selectedProgramId = programSelect.value;
-  const program = selectedProgram();
-
-  if (!lockSpmInput.checked && state.tapSyncActive) {
-    deactivateTapSync();
-  }
-
-  programNameInput.value = program?.name ?? "";
-  state.timelineSteps = Math.max(1, program?.steps.length || 1);
-  loopInput.checked = Boolean(program?.loop ?? true);
-  const effectiveSpm = effectiveSpmForControls(program);
-  spmInput.value = String(effectiveSpm);
-  fadeMsInput.value = String(clampFadeMs(program?.steps?.[0]?.fadeMs ?? 300));
-  stepCountInput.value = String(state.timelineSteps);
-  state.currentPlayheadStep = 0;
-  renderPalette();
-  renderStepGrid();
-  if (state.lastFrame) drawSimulator(state.lastFrame);
-  send({ type: "program", payload: { programId: programSelect.value } });
-  if (isLockedSpmActive()) {
-    requestAnimationFrame(() => enforceLockedSpm());
-  } else {
-    send({ type: "tempo", payload: { spm: effectiveSpmFromBase(effectiveSpm) } });
-  }
-};
-
-stepCountInput.onchange = () => {
-  const changed = applyStepCountToProgram();
-  renderStepGrid();
-  if (changed) scheduleAutoSave();
-};
-
-programNameInput.onchange = () => {
-  const program = selectedProgram();
-  if (!program) return;
-  const normalized = normalizeName(programNameInput.value);
-  if (!normalized || normalized === program.name) {
-    programNameInput.value = program.name;
-    return;
-  }
-  program.name = normalized;
-  scheduleAutoSave();
-  fillProgramSelect();
-};
-
-programNameInput.onblur = () => {
-  const program = selectedProgram();
-  if (!program) return;
-  const normalized = normalizeName(programNameInput.value);
-  if (!normalized || normalized === program.name) return;
-  program.name = normalized;
-  scheduleAutoSave();
-  fillProgramSelect();
+  selectProgram(programSelect.value);
 };
 
 createProgramBtn.onclick = () => createProgram();
+deleteProgramBtn.onclick = () => deleteProgram();
+mobileTabPlaybackBtn.onclick = () => setMobileTab("playback");
+mobileTabSequencerBtn.onclick = () => setMobileTab("sequencer");
 
 window.addEventListener("resize", () => {
+  applyMobileTabUi();
   if (state.lastFrame) drawSimulator(state.lastFrame);
 });
 
@@ -1215,6 +1385,18 @@ ws.onmessage = (message) => {
     state.isBlackout = Boolean(isBlackout);
     state.currentPlayheadStep = Math.max(0, Number(stepIndex) || 0);
     updatePlayPauseLabel();
+    updateBlackoutUi();
+    if (DEBUG_SYNC) {
+      console.debug("[sync-debug] state", {
+        stepIndex: state.currentPlayheadStep,
+        isPlaying: state.isPlaying,
+        isBlackout: state.isBlackout,
+        runningProgramId: state.runningProgramId,
+        selectedProgramId: state.selectedProgramId,
+        spm,
+        loop,
+      });
+    }
 
     if (
       state.runningProgramId
@@ -1236,7 +1418,7 @@ ws.onmessage = (message) => {
     if (spm !== targetSpm) {
       send({ type: "tempo", payload: { spm: targetSpm } });
     }
-    loopInput.checked = Boolean(loop);
+    setLoopEnabled(Boolean(loop));
     renderStepGrid();
 
     if (state.lastFrame) requestAnimationFrame(() => drawSimulator(state.lastFrame));
@@ -1244,5 +1426,9 @@ ws.onmessage = (message) => {
 };
 
 updatePlayPauseLabel();
+updateBlackoutUi();
+setLoopEnabled(true);
+setLockSpmEnabled(false);
 updateTapSyncUi();
+applyMobileTabUi();
 loadColorPresets().then(() => renderPalette());

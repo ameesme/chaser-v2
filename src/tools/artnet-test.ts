@@ -39,6 +39,15 @@ function asBool(value: string | undefined): boolean {
   return true;
 }
 
+function parseAddressList(value: string | undefined): number[] {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((item) => Number(item.trim()))
+    .filter((item) => Number.isFinite(item) && item >= 1 && item <= 512)
+    .map((item) => Math.floor(item));
+}
+
 function buildArtDmxPacket(universe: number, dmx: Uint8Array): Buffer {
   const header = Buffer.alloc(18);
   header.write("Art-Net\0", 0, "ascii");
@@ -49,6 +58,25 @@ function buildArtDmxPacket(universe: number, dmx: Uint8Array): Buffer {
   header.writeUInt16LE(universe & 0x7fff, 14);
   header.writeUInt16BE(dmx.length, 16);
   return Buffer.concat([header, Buffer.from(dmx)]);
+}
+
+function summarizeFrame(frame: Uint8Array): {
+  nonZero: number;
+  checksum: number;
+  sample: Array<{ address: number; value: number }>;
+} {
+  let nonZero = 0;
+  let checksum = 0;
+  const sample: Array<{ address: number; value: number }> = [];
+  for (let i = 0; i < frame.length; i += 1) {
+    const value = frame[i];
+    if (value > 0) {
+      nonZero += 1;
+      if (sample.length < 16) sample.push({ address: i + 1, value });
+    }
+    checksum = (checksum + (i + 1) * value) % 1000000007;
+  }
+  return { nonZero, checksum, sample };
 }
 
 function isArtnetOutput(
@@ -82,6 +110,7 @@ async function loadEnvironment(environmentId: string): Promise<EnvironmentDefini
 
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
+  const debug = process.env.CHASER_DEBUG === "1" || asBool(args.debug);
   const environmentId = args.env ?? "env-studio-a";
   const environment = await loadEnvironment(environmentId);
   const artnet = environment.outputs.find(isArtnetOutput);
@@ -91,12 +120,17 @@ async function main(): Promise<void> {
   const universe = asNumber(args.universe, 0);
   const stepDelayMs = asNumber(args.delay, 250);
   const probeMode = asBool(args.probe);
+  const persistMode = asBool(args.persist);
   const phaseArg = (args.phase ?? "both").toLowerCase();
   const runLogicalPhase = phaseArg === "both" || phaseArg === "logical";
   const runRawPhase = phaseArg === "both" || phaseArg === "raw";
   const probePanelNumber = asNumber(args.panel, 1);
   const probeRawSlots = Math.max(8, asNumber(args.slots, 16));
   const probeValue = Math.max(0, Math.min(255, asNumber(args.value, 21)));
+  const persistHoldMs = Math.max(200, asNumber(args.hold, 3000));
+  const persistRefreshMs = Math.max(20, asNumber(args.refresh, 40));
+  const persistCycles = Math.max(1, asNumber(args.cycles, 2));
+  const persistAddresses = parseAddressList(args.addresses);
 
   const panels = environment.fixtures
     .filter((fixture) => fixture.fixtureTypeId === "fixture-rgbcct-5ch")
@@ -120,6 +154,17 @@ async function main(): Promise<void> {
   const socket = dgram.createSocket("udp4");
   const sendFrame = async (frame: Uint8Array): Promise<void> => {
     const packet = buildArtDmxPacket(universe, frame);
+    if (debug) {
+      const summary = summarizeFrame(frame);
+      console.info("[artnet-probe-debug] send", {
+        host,
+        port,
+        universe,
+        nonZero: summary.nonZero,
+        checksum: summary.checksum,
+        sample: summary.sample,
+      });
+    }
     await new Promise<void>((resolvePromise, rejectPromise) => {
       socket.send(packet, port, host, (error) => {
         if (error) rejectPromise(error);
@@ -130,6 +175,44 @@ async function main(): Promise<void> {
 
   console.log(`ArtNet target ${host}:${port}, universe ${universe}`);
   console.log(`Panels: ${panels.map((fixture) => fixture.name).join(", ")}`);
+
+  if (persistMode) {
+    const addresses = persistAddresses.length > 0
+      ? persistAddresses
+      : [1, 6, 11, 16];
+    const onFrame = new Uint8Array(512);
+    for (const address of addresses) onFrame[address - 1] = probeValue;
+    const offFrame = new Uint8Array(512);
+
+    console.log("\nPersist mode");
+    console.log(`  addresses: ${addresses.join(", ")}`);
+    console.log(`  value: ${probeValue}`);
+    console.log(`  hold: ${persistHoldMs}ms`);
+    console.log(`  refresh: ${persistRefreshMs}ms`);
+    console.log(`  cycles: ${persistCycles}`);
+
+    const repeatSend = async (frame: Uint8Array, durationMs: number, label: string): Promise<void> => {
+      const endAt = Date.now() + durationMs;
+      let sends = 0;
+      while (Date.now() < endAt) {
+        await sendFrame(frame);
+        sends += 1;
+        await delay(persistRefreshMs);
+      }
+      console.log(`  ${label}: sent ${sends} frames`);
+    };
+
+    for (let cycle = 1; cycle <= persistCycles; cycle += 1) {
+      console.log(`\nCycle ${cycle}/${persistCycles}`);
+      await repeatSend(onFrame, persistHoldMs, "ON hold");
+      await repeatSend(offFrame, persistHoldMs, "OFF hold");
+    }
+
+    await sendFrame(offFrame);
+    socket.close();
+    console.log("\nPersist done. Sent final blackout frame.");
+    return;
+  }
 
   if (probeMode) {
     const panel = panels.find((fixture) => panelNumber(fixture.name) === probePanelNumber);

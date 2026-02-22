@@ -41,15 +41,30 @@ export class Sequencer {
   private lastTickAtMs: number | null = null;
   private listeners = new Set<(frame: SequencerFrame) => void>();
   private activeProgram: ProgramDefinition | null = null;
+  private debug = process.env.CHASER_DEBUG === "1";
 
-  setProgram(program: ProgramDefinition): void {
+  setProgram(program: ProgramDefinition, options?: { preservePlayhead?: boolean; suppressEmit?: boolean }): void {
+    this.trace("setProgram:begin", {
+      programId: program.id,
+      preservePlayhead: Boolean(options?.preservePlayhead),
+      steps: program.steps.length,
+      prevState: this.state,
+    });
     this.activeProgram = program;
     this.state.programId = program.id;
     this.state.spm = Math.max(1, Math.min(500, Math.round(program.spm)));
     this.state.loop = program.loop;
-    this.state.stepIndex = 0;
-    this.state.positionMs = 0;
-    this.emitFrame();
+    if (options?.preservePlayhead) {
+      const maxStepIndex = Math.max(0, program.steps.length - 1);
+      this.state.stepIndex = Math.min(this.state.stepIndex, maxStepIndex);
+    } else {
+      this.state.stepIndex = 0;
+      this.state.positionMs = 0;
+    }
+    if (!options?.suppressEmit) {
+      this.emitFrame();
+    }
+    this.trace("setProgram:end", { state: this.state });
   }
 
   getState(): PlayheadState {
@@ -72,12 +87,23 @@ export class Sequencer {
     this.state.isPlaying = true;
     this.emitFrame();
     this.startTimer();
+    this.trace("play", { state: this.state });
+  }
+
+  resume(): void {
+    if (!this.activeProgram) return;
+    if (this.state.isPlaying) return;
+    this.state.isPlaying = true;
+    this.emitFrame();
+    this.startTimer();
+    this.trace("resume", { state: this.state });
   }
 
   pause(): void {
     this.state.isPlaying = false;
     this.stopTimer();
     this.emitFrame();
+    this.trace("pause", { state: this.state });
   }
 
   nextStep(): void {
@@ -89,6 +115,7 @@ export class Sequencer {
     }
     this.state.positionMs = 0;
     this.emitFrame();
+    this.trace("nextStep", { state: this.state });
   }
 
   previousStep(): void {
@@ -101,6 +128,7 @@ export class Sequencer {
     }
     this.state.positionMs = 0;
     this.emitFrame();
+    this.trace("previousStep", { state: this.state });
   }
 
   setStep(stepIndex: number): void {
@@ -110,16 +138,19 @@ export class Sequencer {
     this.state.stepIndex = clamped;
     this.state.positionMs = 0;
     this.emitFrame();
+    this.trace("setStep", { input: stepIndex, clamped, state: this.state });
   }
 
   setSpm(spm: number): void {
     this.state.spm = Math.max(1, Math.min(500, Math.round(spm)));
     this.emitFrame();
+    this.trace("setSpm", { input: spm, state: this.state });
   }
 
   setLoop(enabled: boolean): void {
     this.state.loop = enabled;
     this.emitFrame();
+    this.trace("setLoop", { enabled, state: this.state });
   }
 
   setFrameRate(fps: number): void {
@@ -129,11 +160,40 @@ export class Sequencer {
       this.stopTimer();
       this.startTimer();
     }
+    this.trace("setFrameRate", { input: fps, frameIntervalMs: this.frameIntervalMs });
   }
 
   setBlackout(enabled: boolean): void {
     this.state.isBlackout = enabled;
     this.emitFrame();
+    this.trace("setBlackout", { enabled, state: this.state });
+  }
+
+  applyStateSnapshot(snapshot: Pick<
+    PlayheadState,
+    "stepIndex" | "positionMs" | "spm" | "loop" | "isBlackout" | "isPlaying"
+  >): void {
+    if (!this.activeProgram) return;
+    this.trace("applyStateSnapshot:begin", { snapshot, prevState: this.state });
+    const maxStepIndex = Math.max(0, this.activeProgram.steps.length - 1);
+    const stepIndex = Math.max(0, Math.min(maxStepIndex, Math.floor(snapshot.stepIndex)));
+    this.ensureProgramStep(stepIndex);
+
+    this.state.stepIndex = stepIndex;
+    this.state.positionMs = Math.max(0, snapshot.positionMs);
+    this.state.spm = Math.max(1, Math.min(500, Math.round(snapshot.spm)));
+    this.state.loop = Boolean(snapshot.loop);
+    this.state.isBlackout = Boolean(snapshot.isBlackout);
+    this.state.isPlaying = Boolean(snapshot.isPlaying);
+
+    if (this.state.isPlaying) {
+      this.startTimer();
+    } else {
+      this.stopTimer();
+    }
+
+    this.emitFrame();
+    this.trace("applyStateSnapshot:end", { state: this.state });
   }
 
   subscribe(listener: (frame: SequencerFrame) => void): () => void {
@@ -147,6 +207,7 @@ export class Sequencer {
     if (this.timer) return;
     this.lastTickAtMs = performance.now();
     this.timer = setInterval(() => this.tick(), this.frameIntervalMs);
+    this.trace("startTimer", { frameIntervalMs: this.frameIntervalMs });
   }
 
   private stopTimer(): void {
@@ -154,10 +215,12 @@ export class Sequencer {
     clearInterval(this.timer);
     this.timer = null;
     this.lastTickAtMs = null;
+    this.trace("stopTimer");
   }
 
   private tick(): void {
     if (!this.activeProgram || !this.state.isPlaying) return;
+    this.trace("tick:begin", { state: this.state });
     this.ensureProgramStep(this.state.stepIndex);
     const steps = this.activeProgram.steps;
     if (steps.length === 0) return;
@@ -194,6 +257,7 @@ export class Sequencer {
     }
 
     this.emitFrame();
+    this.trace("tick:end", { state: this.state });
   }
 
   private ensureProgramStep(stepIndex: number): void {
@@ -212,6 +276,11 @@ export class Sequencer {
 
   private emitFrame(): void {
     const frame = this.buildFrame();
+    this.trace("emitFrame", {
+      state: frame.state,
+      valueKeys: Object.keys(frame.values),
+      values: frame.values,
+    });
     for (const listener of this.listeners) {
       listener(frame);
     }
@@ -228,9 +297,11 @@ export class Sequencer {
 
     const steps = this.activeProgram.steps;
     const currentStep = steps[this.state.stepIndex];
+    const atProgramStartBoundary = this.state.stepIndex === 0 && this.state.positionMs <= 0;
+    const useLoopedPrevious = this.state.loop && !(this.state.isPlaying && atProgramStartBoundary);
     const previousIndex = this.state.stepIndex > 0
       ? this.state.stepIndex - 1
-      : this.state.loop
+      : useLoopedPrevious
         ? steps.length - 1
         : 0;
     const previousStep = steps[previousIndex];
@@ -277,5 +348,10 @@ export class Sequencer {
       values,
       state: { ...this.state },
     };
+  }
+
+  private trace(event: string, payload?: unknown): void {
+    if (!this.debug) return;
+    console.info("[sequencer-debug]", event, payload ?? "");
   }
 }

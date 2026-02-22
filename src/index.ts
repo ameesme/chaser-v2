@@ -31,6 +31,7 @@ function connectionSocket(connection: ConnectionLike): WebSocketLike {
 
 async function buildServer() {
   const config = await loadRuntimeConfig();
+  const debug = process.env.CHASER_DEBUG === "1";
 
   const app = Fastify({ logger: true });
   await app.register(cors, { origin: true });
@@ -64,6 +65,32 @@ async function buildServer() {
 
     const packet = buildRenderPacket(frame, config, program.environmentId);
     if (!packet) return;
+    if (debug) {
+      const universeSummary = Object.entries(packet.dmxByUniverse).map(([universe, dmx]) => {
+        let nonZero = 0;
+        let checksum = 0;
+        const sample: Array<{ address: number; value: number }> = [];
+        for (let i = 0; i < dmx.length; i += 1) if (dmx[i] > 0) nonZero += 1;
+        for (let i = 0; i < dmx.length; i += 1) {
+          const value = dmx[i];
+          checksum = (checksum + (i + 1) * value) % 1000000007;
+          if (value > 0 && sample.length < 12) {
+            sample.push({ address: i + 1, value });
+          }
+        }
+        return { universe: Number(universe), nonZero, checksum, sample };
+      });
+      app.log.info(
+        {
+          tag: "sync-debug",
+          phase: "render-packet",
+          programId,
+          stepIndex: frame.state.stepIndex,
+          universeSummary,
+        },
+        "Render packet built",
+      );
+    }
     renderer.render(packet);
   });
 
@@ -104,6 +131,9 @@ async function buildServer() {
           applyProgram(event.payload.programId);
           break;
         }
+      }
+      if (debug) {
+        app.log.info({ tag: "ws-debug", event }, "Handled WS client event");
       }
     });
 

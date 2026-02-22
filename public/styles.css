@@ -34,22 +34,12 @@ textarea {
 .toolbar {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 10px;
   padding: 10px;
   border-bottom: 1px solid var(--line);
-  white-space: nowrap;
   overflow-x: auto;
-}
-
-.toolbar-left,
-.toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.toolbar-left {
-  flex-wrap: wrap;
+  overflow-y: hidden;
 }
 
 .tempo-row {
@@ -58,19 +48,61 @@ textarea {
   gap: 8px;
 }
 
-.toolbar-sep {
-  align-self: stretch;
-  width: 0;
-  border-left: 1px solid var(--muted);
-  display: block;
-  margin: 0 4px;
-  margin-top: -10px;
-  margin-bottom: -10px;
-  font-size: 0;
+.toolbar-group {
+  display: grid;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  flex: 0 0 auto;
 }
 
-.toolbar-right {
+.toolbar-group-title {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.toolbar-group-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group-programs {
   margin-left: auto;
+}
+
+.playback-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.playback-aux-controls,
+.playback-transport-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.playback-transport-controls {
+  order: 1;
+}
+
+.playback-aux-controls {
+  order: 2;
+}
+
+.mobile-tabs {
+  display: none;
+}
+
+.mobile-playback-view {
+  display: none;
 }
 
 .workspace {
@@ -86,7 +118,6 @@ textarea {
 }
 
 .piano-pane {
-  border-right: 1px solid var(--line);
   padding: 10px;
   display: grid;
   grid-template-rows: 1fr auto;
@@ -97,7 +128,7 @@ textarea {
   padding: 10px;
   position: relative;
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: 1fr;
   gap: 10px;
 }
 
@@ -122,14 +153,6 @@ input:hover {
 
 #fadeMsInput {
   width: 88px;
-}
-
-#stepCountInput {
-  width: 78px;
-}
-
-#programNameInput {
-  width: 160px;
 }
 
 .matrix-wrap {
@@ -164,6 +187,10 @@ input:hover {
   z-index: 3;
   background: #0a0a0a;
   cursor: pointer;
+}
+
+.matrix-cell.header.step-add {
+  color: #9dd39d;
 }
 
 .matrix-cell.fixture-name {
@@ -203,7 +230,25 @@ input:hover {
   padding: 8px;
   overflow: auto;
   max-height: 36vh;
+}
+
+.palette-layout {
   display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 10px;
+}
+
+.palette-modes {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.palette-config {
+  padding: 8px;
+  min-height: 130px;
+  display: grid;
+  align-content: start;
   gap: 8px;
 }
 
@@ -228,6 +273,12 @@ input:hover {
 .active-tool {
   border-color: var(--fg);
   background: #1a1a1a;
+}
+
+#blackoutBtn.active-tool {
+  border-color: #ff6b6b;
+  background: #2a0c0c;
+  color: #ffd7d7;
 }
 
 .palette-feature-name {
@@ -290,7 +341,6 @@ input:hover {
 }
 
 .simulator {
-  border: 1px solid var(--line);
   position: relative;
   overflow: hidden;
   display: grid;
@@ -299,48 +349,270 @@ input:hover {
 
 .room-canvas {
   display: block;
-  border: 1px solid #1a1a1a;
   background: #020202;
 }
 
-.state-box {
-  border: 1px solid var(--line);
-  margin: 0;
-  padding: 10px;
-  color: var(--muted);
-  min-height: 110px;
-  max-height: 180px;
-  overflow: auto;
-}
-
 @media (max-width: 980px) {
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    height: 100vh;
+  }
+
+  .mobile-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mobile-tab-btn {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  body.mobile-tab-playback #mobileTabPlaybackBtn,
+  body.mobile-tab-sequencer #mobileTabSequencerBtn {
+    border-color: var(--fg);
+    background: #1a1a1a;
+  }
+
   .workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: 2fr 1fr;
+    display: block;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .toolbar {
     flex-direction: column;
     align-items: stretch;
+    overflow-x: hidden;
+    max-height: 40vh;
+    overflow-y: auto;
   }
 
   .tempo-row {
     flex-basis: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
   }
 
-  .toolbar-right {
+  .tempo-row #tapSyncBtn {
+    grid-column: 1 / 4;
+    grid-row: 1;
+    min-height: 52px;
+  }
+
+  .tempo-row #spmInput {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .tempo-row #spmMultiplierSelect {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .tempo-row #lockSpmInput {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .toolbar-group-programs {
     margin-left: 0;
   }
 
-  .toolbar-sep {
+  .toolbar-group {
+    width: 100%;
+  }
+
+  .toolbar-group-row > button,
+  .toolbar-group-row > input,
+  .toolbar-group-row > select,
+  .toolbar-group-row > label {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+  }
+
+  .toolbar-group-row > label > input {
+    width: 100%;
+  }
+
+  #spmInput,
+  #fadeMsInput {
+    width: 100%;
+  }
+
+  .toolbar-group-transition {
     display: none;
   }
 
-  .state-box {
+  body.mobile-tab-playback .toolbar-group-playback,
+  body.mobile-tab-playback .toolbar-group-tempo {
+    display: grid;
+  }
+
+  body.mobile-tab-playback .toolbar-group-tempo {
+    order: 1;
+  }
+
+  body.mobile-tab-playback .toolbar-group-playback {
+    order: 2;
+  }
+
+  body.mobile-tab-playback .toolbar-group-programs {
+    display: none;
+  }
+
+  body.mobile-tab-playback .mobile-tabs {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  body.mobile-tab-playback .workspace {
+    order: 2;
+  }
+
+  body.mobile-tab-playback .toolbar {
+    order: 3;
+    flex: 0 0 auto;
+    border-top: 1px solid var(--line);
+    border-bottom: 0;
+  }
+
+  body.mobile-tab-playback .matrix-wrap,
+  body.mobile-tab-playback .palette {
+    display: none;
+  }
+
+  body.mobile-tab-playback .mobile-playback-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    overflow: auto;
+  }
+
+  body.mobile-tab-playback .piano-pane {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    grid-template-rows: none;
+  }
+
+  body.mobile-tab-playback .playback-controls {
+    display: grid;
+    gap: 10px;
+  }
+
+  body.mobile-tab-playback .playback-aux-controls {
+    order: 1;
+    justify-content: stretch;
+  }
+
+  body.mobile-tab-playback .playback-transport-controls {
+    order: 2;
+    justify-content: stretch;
+    gap: 10px;
+  }
+
+  body.mobile-tab-playback .playback-aux-controls button,
+  body.mobile-tab-playback .playback-transport-controls button {
+    flex: 1 1 0;
+  }
+
+  body.mobile-tab-playback .playback-transport-controls button {
+    min-width: 0;
+    min-height: 54px;
+    font-size: 18px;
+    padding: 10px 12px;
+  }
+
+  .mobile-program-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(88px, 1fr);
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    align-content: stretch;
+  }
+
+  .mobile-program-btn {
+    min-height: 88px;
+    height: 100%;
+    font-size: 16px;
+    text-align: center;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-program-btn.active {
+    border-color: var(--fg);
+    background: #1a1a1a;
+  }
+
+  body.mobile-tab-sequencer .toolbar-group-playback,
+  body.mobile-tab-sequencer .toolbar-group-tempo {
+    display: none;
+  }
+
+  body.mobile-tab-sequencer .toolbar-group-programs {
+    display: grid;
+    order: -1;
+  }
+
+  body.mobile-tab-sequencer .mobile-tabs {
+    order: 1;
+    flex: 0 0 auto;
+  }
+
+  body.mobile-tab-sequencer .toolbar {
+    order: 2;
+    flex: 0 0 auto;
+    border-top: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  body.mobile-tab-sequencer .workspace {
+    order: 3;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  body.mobile-tab-sequencer .piano-pane {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    grid-template-rows: none;
+  }
+
+  body.mobile-tab-sequencer .matrix-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  body.mobile-tab-sequencer .mobile-playback-view {
     display: none;
   }
 
   .visual-pane {
-    grid-template-rows: 1fr;
+    display: none;
   }
+
 }

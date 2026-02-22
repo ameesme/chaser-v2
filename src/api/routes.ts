@@ -60,6 +60,8 @@ export async function registerRoutes(
     wsHub: WsHub;
   },
 ): Promise<void> {
+  const debug = process.env.CHASER_DEBUG === "1";
+
   app.get("/health", async () => ({ ok: true }));
 
   app.get("/api/config", async () => ({
@@ -96,22 +98,64 @@ export async function registerRoutes(
           reply.code(400);
           return { error: validationError };
         }
+        if (debug) {
+          const totalFrames = request.body.steps.reduce((sum, step) => sum + step.frames.length, 0);
+          const stepFrameCounts = request.body.steps.map((step, index) => ({
+            index,
+            id: step.id,
+            frames: step.frames.length,
+          }));
+          app.log.info(
+            {
+              tag: "sync-debug",
+              phase: "put-request-body",
+              programId: request.body.id,
+              totalFrames,
+              stepFrameCounts,
+            },
+            "Received program update payload",
+          );
+        }
 
         const updated = await deps.programStore.update(request.params.id, request.body);
         if (deps.sequencer.getProgramId() === updated.id) {
           const currentState = deps.sequencer.getState();
-          deps.sequencer.setProgram(updated);
+          if (debug) {
+            app.log.info(
+              {
+                tag: "sync-debug",
+                phase: "before-active-program-update",
+                programId: updated.id,
+                stepIndex: currentState.stepIndex,
+                isPlaying: currentState.isPlaying,
+                positionMs: currentState.positionMs,
+                updatedSteps: updated.steps.length,
+              },
+              "Applying active program update",
+            );
+          }
+          deps.sequencer.setProgram(updated, { preservePlayhead: true, suppressEmit: true });
           const environment = deps.config.environments.find(
             (item) => item.id === updated.environmentId,
           );
           deps.sequencer.setFrameRate(environment?.renderFps ?? 30);
-          const maxStepIndex = Math.max(0, updated.steps.length - 1);
-          deps.sequencer.setStep(Math.min(currentState.stepIndex, maxStepIndex));
-          deps.sequencer.setBlackout(currentState.isBlackout);
-          deps.sequencer.setSpm(currentState.spm);
-          deps.sequencer.setLoop(currentState.loop);
-          if (currentState.isPlaying) {
-            deps.sequencer.play();
+          deps.sequencer.applyStateSnapshot(currentState);
+          if (debug) {
+            const afterState = deps.sequencer.getState();
+            app.log.info(
+              {
+                tag: "sync-debug",
+                phase: "after-active-program-update",
+                programId: updated.id,
+                stepIndex: afterState.stepIndex,
+                isPlaying: afterState.isPlaying,
+                positionMs: afterState.positionMs,
+                spm: afterState.spm,
+                loop: afterState.loop,
+                blackout: afterState.isBlackout,
+              },
+              "Active program update applied",
+            );
           }
         }
         deps.wsHub.broadcast({ type: "programs", payload: deps.programStore.list() });

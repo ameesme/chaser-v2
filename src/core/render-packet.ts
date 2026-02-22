@@ -5,6 +5,8 @@ import type {
 } from "../config/types.js";
 import type { SequencerFrame } from "./sequencer.js";
 
+const debug = process.env.CHASER_DEBUG === "1";
+
 export type RenderPacket = {
   frame: SequencerFrame;
   environment: EnvironmentDefinition;
@@ -22,6 +24,14 @@ export function buildRenderPacket(
   config: RuntimeConfig,
   environmentId: string,
 ): RenderPacket | null {
+  if (debug) {
+    console.info("[render-debug] build:start", {
+      environmentId,
+      stepIndex: frame.state.stepIndex,
+      valueKeys: Object.keys(frame.values),
+      values: frame.values,
+    });
+  }
   const environment = config.environments.find((item) => item.id === environmentId);
   if (!environment) return null;
 
@@ -30,17 +40,25 @@ export function buildRenderPacket(
   const fixtureById = new Map(environment.fixtures.map((fixture) => [fixture.id, fixture]));
   const fixtureDefs = new Map(config.fixtures.map((fixture) => [fixture.id, fixture]));
 
-  // Always emit full universes with explicit 0 defaults so fixtures don't latch stale values.
+  // Always emit full fixture footprints with explicit 0 defaults so fixtures
+  // don't latch stale values on channels outside modeled feature groups.
   for (const fixture of environment.fixtures) {
     const fixtureDef = fixtureDefs.get(fixture.fixtureTypeId);
     if (!fixtureDef) continue;
 
     const buffer = dmxByUniverse.get(fixture.universe) ?? new Uint8Array(512);
-    for (const featureDef of fixtureDef.features) {
-      for (const fixtureChannel of featureDef.channels) {
-        const dmxAddress = fixture.address + fixtureChannel - 1;
-        if (dmxAddress < 1 || dmxAddress > 512) continue;
-        buffer[dmxAddress - 1] = 0;
+    for (let fixtureChannel = 1; fixtureChannel <= fixtureDef.channels; fixtureChannel += 1) {
+      const dmxAddress = fixture.address + fixtureChannel - 1;
+      if (dmxAddress < 1 || dmxAddress > 512) continue;
+      buffer[dmxAddress - 1] = 0;
+      if (debug) {
+        console.info("[render-debug] zero", {
+          fixtureId: fixture.id,
+          fixtureName: fixture.name,
+          universe: fixture.universe,
+          fixtureChannel,
+          dmxAddress,
+        });
       }
     }
     dmxByUniverse.set(fixture.universe, buffer);
@@ -73,16 +91,43 @@ export function buildRenderPacket(
       const dmxAddress = fixture.address + fixtureChannel - 1;
       if (dmxAddress < 1 || dmxAddress > 512) continue;
       buffer[dmxAddress - 1] = clampDmx(value);
+      if (debug) {
+        console.info("[render-debug] write", {
+          key,
+          fixtureId,
+          fixtureName: fixture.name,
+          featureId,
+          universe,
+          fixtureChannel,
+          dmxAddress,
+          rawValue,
+          normalized,
+          min,
+          max,
+          output: clampDmx(value),
+        });
+      }
     }
 
     dmxByUniverse.set(universe, buffer);
   }
 
-  return {
+  const out = {
     frame,
     environment,
     dmxByUniverse: Object.fromEntries(dmxByUniverse.entries()),
   };
+  if (debug) {
+    const summary = Object.entries(out.dmxByUniverse).map(([universe, dmx]) => {
+      const nonZero: Array<{ address: number; value: number }> = [];
+      for (let i = 0; i < dmx.length; i += 1) {
+        if (dmx[i] > 0) nonZero.push({ address: i + 1, value: dmx[i] });
+      }
+      return { universe: Number(universe), nonZeroCount: nonZero.length, nonZero };
+    });
+    console.info("[render-debug] build:end", { summary });
+  }
+  return out;
 }
 
 export function fixtureDefinitionByType(
