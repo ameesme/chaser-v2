@@ -23,6 +23,7 @@ const fadeMsInput = document.getElementById("fadeMsInput");
 const mobileTabPlaybackBtn = document.getElementById("mobileTabPlaybackBtn");
 const mobileTabSequencerBtn = document.getElementById("mobileTabSequencerBtn");
 const mobileProgramGrid = document.getElementById("mobileProgramGrid");
+const layerModeSwitch = document.getElementById("layerModeSwitch");
 
 const stepGrid = document.getElementById("stepGrid");
 const palette = document.getElementById("palette");
@@ -50,6 +51,7 @@ const state = {
   rgbBaseColorByKey: {},
   rgbBrightnessByKey: {},
   selectedPaletteKey: null,
+  paletteLayer: "B",
   drawTool: "pencil",
   painting: false,
   lastPaintKey: null,
@@ -385,6 +387,7 @@ function fillProgramSelect() {
   const fadeMs = clampFadeMs(program?.steps?.[0]?.fadeMs ?? 300);
   fadeMsInput.value = String(fadeMs);
   updateTapSyncUi();
+  renderLayerModeSwitch();
   renderMobileProgramGrid();
 }
 
@@ -565,6 +568,35 @@ function featureOptions() {
     }
   }
   return options;
+}
+
+function setPaletteLayer(layer) {
+  const next = layer === "A" ? "A" : "B";
+  if (state.paletteLayer === next) return;
+  state.paletteLayer = next;
+  renderLayerModeSwitch();
+  renderStepGrid();
+  renderPalette();
+}
+
+function renderLayerModeSwitch() {
+  if (!layerModeSwitch) return;
+  layerModeSwitch.innerHTML = "";
+
+  const staticBtn = document.createElement("button");
+  staticBtn.type = "button";
+  staticBtn.textContent = "Static";
+  if (state.paletteLayer === "A") staticBtn.classList.add("active-tool");
+  staticBtn.onclick = () => setPaletteLayer("A");
+
+  const sequencerBtn = document.createElement("button");
+  sequencerBtn.type = "button";
+  sequencerBtn.textContent = "Sequencer";
+  if (state.paletteLayer === "B") sequencerBtn.classList.add("active-tool");
+  sequencerBtn.onclick = () => setPaletteLayer("B");
+
+  layerModeSwitch.appendChild(staticBtn);
+  layerModeSwitch.appendChild(sequencerBtn);
 }
 
 function renderPalette() {
@@ -816,12 +848,47 @@ function activePaletteOption() {
 function samplePaletteFromCell(fixtureId, stepIndex) {
   const environment = selectedEnvironment();
   const step = getStep(stepIndex);
-  if (!environment || !step) return false;
+  if (!environment) return false;
 
   const envFixture = environment.fixtures.find((fixture) => fixture.id === fixtureId);
   if (!envFixture) return false;
   const fixtureDef = fixtureDefinition(envFixture.fixtureTypeId);
   if (!fixtureDef) return false;
+
+  if (state.paletteLayer === "A") {
+    const layerAValues = state.lastFrame?.layerAValues ?? {};
+    const fixtureEntries = Object.entries(layerAValues).filter(([key]) => key.startsWith(`${fixtureId}:`));
+    if (fixtureEntries.length === 0) return false;
+
+    const active = activePaletteOption();
+    let featureId = active?.feature?.id ?? null;
+    let values = null;
+    if (featureId) {
+      const key = `${fixtureId}:${featureId}`;
+      if (layerAValues[key]) values = [...layerAValues[key]];
+    }
+    if (!values) {
+      const [entryKey, entryValues] = fixtureEntries[0];
+      featureId = entryKey.split(":")[1] ?? null;
+      values = [...entryValues];
+    }
+    if (!featureId || !values) return false;
+
+    const feature = fixtureDef.features.find((item) => item.id === featureId);
+    if (!feature) return false;
+    const key = `${envFixture.fixtureTypeId}::${feature.id}`;
+    state.selectedPaletteKey = key;
+    const nextValues = values.slice(0, feature.channels.length);
+    while (nextValues.length < feature.channels.length) nextValues.push(0);
+    state.paletteFeatureValues[key] = nextValues.map((value) => clamp255(value));
+    if (feature.kind === "rgb") {
+      state.rgbBaseColorByKey[key] = [...state.paletteFeatureValues[key]];
+      state.rgbBrightnessByKey[key] = 255;
+    }
+    return true;
+  }
+
+  if (!step) return false;
 
   const fixtureFrames = step.frames.filter((item) => item.fixtureId === fixtureId);
   if (fixtureFrames.length === 0) return false;
@@ -850,8 +917,10 @@ function samplePaletteFromCell(fixtureId, stepIndex) {
 
 function applyPaletteToCell(fixtureId, stepIndex) {
   const environment = selectedEnvironment();
-  const step = ensureStepExists(stepIndex);
-  if (!environment || !step) return { changed: false, picked: false, fixtureDef: null };
+  const step = state.paletteLayer === "B" ? ensureStepExists(stepIndex) : null;
+  if (!environment || (state.paletteLayer === "B" && !step)) {
+    return { changed: false, picked: false, fixtureDef: null };
+  }
 
   const envFixture = environment.fixtures.find((fixture) => fixture.id === fixtureId);
   if (!envFixture) return { changed: false, picked: false, fixtureDef: null };
@@ -860,6 +929,64 @@ function applyPaletteToCell(fixtureId, stepIndex) {
 
   if (state.drawTool === "picker") {
     return { changed: false, picked: samplePaletteFromCell(fixtureId, stepIndex), fixtureDef };
+  }
+
+  if (state.paletteLayer === "A") {
+    const active = activePaletteOption();
+    const layerAValues = state.lastFrame?.layerAValues ?? {};
+    if (state.lastFrame && !state.lastFrame.layerAValues) state.lastFrame.layerAValues = {};
+
+    if (state.drawTool === "eraser") {
+      const hadAny = Object.keys(layerAValues).some((key) => key.startsWith(`${fixtureId}:`));
+      if (hadAny) {
+        if (state.lastFrame?.layerAValues) {
+          for (const key of Object.keys(state.lastFrame.layerAValues)) {
+            if (!key.startsWith(`${fixtureId}:`)) continue;
+            delete state.lastFrame.layerAValues[key];
+          }
+        }
+        send({ type: "layerAClearFixture", payload: { fixtureId } });
+      }
+      return { changed: hadAny, picked: false, fixtureDef };
+    }
+
+    if (!active) return { changed: false, picked: false, fixtureDef };
+    const feature = fixtureDef.features.find((item) => item.id === active.feature.id);
+    if (!feature) return { changed: false, picked: false, fixtureDef };
+
+    const values = (state.paletteFeatureValues[active.key] ?? defaultFeatureValues(active.feature))
+      .slice(0, feature.channels.length);
+    while (values.length < feature.channels.length) values.push(values[values.length - 1] ?? 0);
+    for (let i = 0; i < values.length; i += 1) values[i] = clamp255(values[i]);
+
+    const key = `${fixtureId}:${feature.id}`;
+    const current = layerAValues[key] ?? null;
+
+    if (values.every((value) => value === 0)) {
+      if (!current) return { changed: false, picked: false, fixtureDef };
+      if (state.lastFrame?.layerAValues) {
+        delete state.lastFrame.layerAValues[key];
+      }
+      send({ type: "layerAClearFeature", payload: { fixtureId, featureId: feature.id } });
+      return { changed: true, picked: false, fixtureDef };
+    }
+
+    const next = values.slice(0, feature.channels.length);
+    const changed = JSON.stringify(current ?? []) !== JSON.stringify(next);
+    if (!changed) return { changed: false, picked: false, fixtureDef };
+    if (state.lastFrame) {
+      state.lastFrame.layerAValues = state.lastFrame.layerAValues ?? {};
+      state.lastFrame.layerAValues[key] = [...next];
+    }
+    send({
+      type: "layerASet",
+      payload: {
+        fixtureId,
+        featureId: feature.id,
+        value: normalizeByFeature(feature, next),
+      },
+    });
+    return { changed: true, picked: false, fixtureDef };
   }
 
   if (state.drawTool === "eraser") {
@@ -912,14 +1039,32 @@ function applyPaletteToCell(fixtureId, stepIndex) {
 }
 
 function updateCellPreview(cell, fixtureId, stepIndex, fixtureDef) {
+  if (!fixtureDef) {
+    cell.style.background = "";
+    return;
+  }
+
+  if (state.paletteLayer === "A") {
+    const source = state.lastFrame?.layerAValues ?? {};
+    const values = {};
+    for (const [key, value] of Object.entries(source)) {
+      if (!key.startsWith(`${fixtureId}:`)) continue;
+      values[key] = Array.isArray(value) ? value : [value];
+    }
+    cell.style.background = Object.keys(values).length > 0
+      ? fixtureColor(values, fixtureId, fixtureDef)
+      : "";
+    return;
+  }
+
   const step = getStep(stepIndex);
   const frames = step ? getFixtureFramesForStep(step, fixtureId) : [];
-  if (frames.length > 0 && fixtureDef) {
+  if (frames.length > 0) {
     const values = keyframeValues(step, fixtureId);
     cell.style.background = fixtureColor(values, fixtureId, fixtureDef);
-  } else {
-    cell.style.background = "";
+    return;
   }
+  cell.style.background = "";
 }
 
 function renderStepGrid() {
@@ -928,6 +1073,68 @@ function renderStepGrid() {
   const program = selectedProgram();
   const environment = selectedEnvironment();
   if (!program || !environment) return;
+
+  if (state.paletteLayer === "A") {
+    const valueColWidth = CELL_PX * 3;
+    stepGrid.style.gridTemplateColumns = `${FIXTURE_LABEL_WIDTH}px ${valueColWidth}px`;
+
+    const topLeft = document.createElement("div");
+    topLeft.className = "matrix-cell header fixture-name";
+    topLeft.textContent = "";
+    stepGrid.appendChild(topLeft);
+
+    const valueHeader = document.createElement("div");
+    valueHeader.className = "matrix-cell header static-header";
+    valueHeader.textContent = "Static";
+    stepGrid.appendChild(valueHeader);
+
+    for (const fixture of environment.fixtures) {
+      const fixtureDef = fixtureDefinition(fixture.fixtureTypeId);
+      if (!fixtureDef) continue;
+
+      const nameCell = document.createElement("div");
+      nameCell.className = "matrix-cell fixture-name";
+      nameCell.textContent = fixture.name;
+      stepGrid.appendChild(nameCell);
+
+      const cell = document.createElement("div");
+      cell.className = "matrix-cell keyframe static-value";
+      updateCellPreview(cell, fixture.id, 0, fixtureDef);
+
+      const paintKey = `${fixture.id}:static`;
+      const paintCell = () => {
+        const { changed, picked, fixtureDef: def } = applyPaletteToCell(
+          fixture.id,
+          state.currentPlayheadStep,
+        );
+        if (!changed && !picked) return;
+        if (picked) {
+          state.drawTool = "pencil";
+          renderPalette();
+          return;
+        }
+        updateCellPreview(cell, fixture.id, 0, def);
+      };
+
+      cell.onmousedown = (event) => {
+        if (event.button !== 0) return;
+        state.painting = true;
+        state.lastPaintKey = paintKey;
+        cell.classList.add("painting");
+        paintCell();
+      };
+
+      cell.onmouseenter = () => {
+        if (!state.painting || state.lastPaintKey === paintKey) return;
+        state.lastPaintKey = paintKey;
+        cell.classList.add("painting");
+        paintCell();
+      };
+
+      stepGrid.appendChild(cell);
+    }
+    return;
+  }
 
   const stepCount = state.timelineSteps;
   stepGrid.style.gridTemplateColumns = `${FIXTURE_LABEL_WIDTH}px repeat(${stepCount + 1}, ${CELL_PX}px)`;
@@ -1213,6 +1420,7 @@ function applyPrograms(programs) {
 
 function applyConfig(config) {
   state.config = config;
+  renderLayerModeSwitch();
   renderPalette();
   renderStepGrid();
   if (state.lastFrame) {
@@ -1352,4 +1560,5 @@ setLoopEnabled(true);
 setLockSpmEnabled(false);
 updateTapSyncUi();
 applyMobileTabUi();
+renderLayerModeSwitch();
 loadColorPresets().then(() => renderPalette());

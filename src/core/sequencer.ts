@@ -1,9 +1,13 @@
 import type { FeatureValue, PlayheadState, ProgramDefinition } from "../config/types.js";
 import { performance } from "node:perf_hooks";
 
+type LayerValueMap = Record<string, number[]>;
+
 export type SequencerFrame = {
   timestamp: number;
   values: Record<string, number[]>;
+  layerAValues: LayerValueMap;
+  layerBValues: LayerValueMap;
   state: PlayheadState;
 };
 
@@ -21,8 +25,41 @@ function asArray(value: FeatureValue): number[] {
   return Array.isArray(value) ? value : [value];
 }
 
+function clampChannel(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  if (value < 0) return 0;
+  if (value > 255) return 255;
+  return Math.round(value);
+}
+
 function isZeroValue(values: number[]): boolean {
   return values.every((value) => value <= 0);
+}
+
+function cloneLayerValues(values: LayerValueMap): LayerValueMap {
+  const clone: LayerValueMap = {};
+  for (const [key, entry] of Object.entries(values)) {
+    clone[key] = [...entry];
+  }
+  return clone;
+}
+
+function addLayerValues(layerA: LayerValueMap, layerB: LayerValueMap): LayerValueMap {
+  const combined: LayerValueMap = {};
+  const keys = new Set([...Object.keys(layerA), ...Object.keys(layerB)]);
+  for (const key of keys) {
+    const a = layerA[key] ?? [0];
+    const b = layerB[key] ?? [0];
+    const length = Math.max(a.length, b.length);
+    const out: number[] = [];
+    for (let i = 0; i < length; i += 1) {
+      const aValue = a[i] ?? a[0] ?? 0;
+      const bValue = b[i] ?? b[0] ?? 0;
+      out.push(clampChannel(aValue + bValue));
+    }
+    if (!isZeroValue(out)) combined[key] = out;
+  }
+  return combined;
 }
 
 export class Sequencer {
@@ -41,6 +78,7 @@ export class Sequencer {
   private lastTickAtMs: number | null = null;
   private listeners = new Set<(frame: SequencerFrame) => void>();
   private activeProgram: ProgramDefinition | null = null;
+  private layerAValues: LayerValueMap = {};
   private debug = process.env.CHASER_DEBUG === "1";
 
   setProgram(program: ProgramDefinition, options?: { preservePlayhead?: boolean; suppressEmit?: boolean }): void {
@@ -169,6 +207,39 @@ export class Sequencer {
     this.trace("setBlackout", { enabled, state: this.state });
   }
 
+  setLayerAValue(fixtureId: string, featureId: string, value: FeatureValue): void {
+    const key = frameKey(fixtureId, featureId);
+    const normalized = asArray(value).map((item) => clampChannel(item));
+    if (isZeroValue(normalized)) {
+      delete this.layerAValues[key];
+    } else {
+      this.layerAValues[key] = normalized;
+    }
+    this.emitFrame();
+    this.trace("setLayerAValue", { key, value: this.layerAValues[key] ?? [0] });
+  }
+
+  clearLayerAFeature(fixtureId: string, featureId: string): void {
+    const key = frameKey(fixtureId, featureId);
+    if (!(key in this.layerAValues)) return;
+    delete this.layerAValues[key];
+    this.emitFrame();
+    this.trace("clearLayerAFeature", { key });
+  }
+
+  clearLayerAFixture(fixtureId: string): void {
+    let changed = false;
+    const prefix = `${fixtureId}:`;
+    for (const key of Object.keys(this.layerAValues)) {
+      if (!key.startsWith(prefix)) continue;
+      delete this.layerAValues[key];
+      changed = true;
+    }
+    if (!changed) return;
+    this.emitFrame();
+    this.trace("clearLayerAFixture", { fixtureId });
+  }
+
   applyStateSnapshot(snapshot: Pick<
     PlayheadState,
     "stepIndex" | "positionMs" | "spm" | "loop" | "isBlackout" | "isPlaying"
@@ -288,9 +359,12 @@ export class Sequencer {
 
   private buildFrame(): SequencerFrame {
     if (!this.activeProgram || this.activeProgram.steps.length === 0) {
+      const layerAValues = cloneLayerValues(this.layerAValues);
       return {
         timestamp: Date.now(),
-        values: {},
+        values: layerAValues,
+        layerAValues,
+        layerBValues: {},
         state: { ...this.state },
       };
     }
@@ -323,7 +397,7 @@ export class Sequencer {
         : 1
       : 1;
 
-    const values: Record<string, number[]> = {};
+    const layerBValues: LayerValueMap = {};
     for (const key of keys) {
       const from = prevMap.get(key) ?? [0];
       const to = currentMap.get(key) ?? [0];
@@ -338,14 +412,17 @@ export class Sequencer {
         );
       }
 
-      if (!isZeroValue(out)) {
-        values[key] = out;
-      }
+      if (!isZeroValue(out)) layerBValues[key] = out;
     }
+
+    const layerAValues = cloneLayerValues(this.layerAValues);
+    const values = addLayerValues(layerAValues, layerBValues);
 
     return {
       timestamp: Date.now(),
       values,
+      layerAValues,
+      layerBValues,
       state: { ...this.state },
     };
   }

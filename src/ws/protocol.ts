@@ -20,4 +20,7 @@ export type ClientEvent =
   | { type: "blackout"; payload: { enabled: boolean } }
   | { type: "tempo"; payload: { spm: number } }
   | { type: "loop"; payload: { enabled: boolean } }
-  | { type: "program"; payload: { programId: string } };
+  | { type: "program"; payload: { programId: string } }
+  | { type: "layerASet"; payload: { fixtureId: string; featureId: string; value: number | number[] } }
+  | { type: "layerAClearFeature"; payload: { fixtureId: string; featureId: string } }
+  | { type: "layerAClearFixture"; payload: { fixtureId: string } };

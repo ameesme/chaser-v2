@@ -125,6 +125,15 @@ async function buildServer() {
           applyProgram(event.payload.programId);
           break;
         }
+        case "layerASet":
+          sequencer.setLayerAValue(event.payload.fixtureId, event.payload.featureId, event.payload.value);
+          break;
+        case "layerAClearFeature":
+          sequencer.clearLayerAFeature(event.payload.fixtureId, event.payload.featureId);
+          break;
+        case "layerAClearFixture":
+          sequencer.clearLayerAFixture(event.payload.fixtureId);
+          break;
       }
       if (debug) {
         app.log.info({ tag: "ws-debug", event }, "Handled WS client event");
