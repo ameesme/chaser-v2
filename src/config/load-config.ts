@@ -14,11 +14,9 @@ function clampSpm(value: unknown): number {
 }
 
 function normalizeProgram(program: ProgramDefinition): ProgramDefinition {
-  const legacy = program as ProgramDefinition & { tempoBpm?: number };
-  const { tempoBpm: _legacyTempoBpm, ...rest } = legacy;
   return {
-    ...rest,
-    spm: clampSpm(program.spm ?? legacy.tempoBpm ?? 120),
+    ...program,
+    spm: clampSpm(program.spm ?? 120),
     loop: typeof program.loop === "boolean" ? program.loop : true,
   };
 }

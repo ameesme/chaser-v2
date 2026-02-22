@@ -9,8 +9,7 @@ export type ConfigPayload = {
 export type ServerEvent =
   | { type: "programs"; payload: ProgramDefinition[] }
   | { type: "config"; payload: ConfigPayload }
-  | { type: "frame"; payload: SequencerFrame }
-  | { type: "state"; payload: SequencerFrame["state"] };
+  | { type: "frame"; payload: SequencerFrame };
 
 export type ClientEvent =
   | { type: "play" }

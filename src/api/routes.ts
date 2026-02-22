@@ -64,11 +64,6 @@ export async function registerRoutes(
 
   app.get("/health", async () => ({ ok: true }));
 
-  app.get("/api/config", async () => ({
-    fixtures: deps.config.fixtures,
-    environments: deps.config.environments,
-  }));
-
   app.get("/api/programs", async () => deps.programStore.list());
 
   app.post<{ Body: ProgramDefinition }>("/api/programs", async (request, reply) => {
@@ -177,65 +172,5 @@ export async function registerRoutes(
       reply.code(404);
       return { error: asErrorMessage(error) };
     }
-  });
-
-  app.get("/api/state", async () => deps.sequencer.getState());
-
-  app.post<{
-    Body: {
-      action: string;
-      spm?: number;
-      enabled?: boolean;
-      programId?: string;
-      stepIndex?: number;
-    };
-  }>("/api/control", async (request, reply) => {
-    const { action } = request.body;
-    switch (action) {
-      case "play":
-        deps.sequencer.play();
-        break;
-      case "pause":
-        deps.sequencer.pause();
-        break;
-      case "next":
-        deps.sequencer.nextStep();
-        break;
-      case "previous":
-        deps.sequencer.previousStep();
-        break;
-      case "seek":
-        deps.sequencer.setStep(request.body.stepIndex ?? 0);
-        break;
-      case "tempo":
-        deps.sequencer.setSpm(request.body.spm ?? 120);
-        break;
-      case "loop":
-        deps.sequencer.setLoop(Boolean(request.body.enabled));
-        break;
-      case "blackout":
-        deps.sequencer.setBlackout(Boolean(request.body.enabled));
-        break;
-      case "program": {
-        const program = deps.programStore.get(request.body.programId ?? "");
-        if (!program) {
-          reply.code(404);
-          return { error: "Program not found" };
-        }
-        deps.sequencer.setProgram(program);
-        const environment = deps.config.environments.find(
-          (item) => item.id === program.environmentId,
-        );
-        deps.sequencer.setFrameRate(environment?.renderFps ?? 30);
-        break;
-      }
-      default:
-        reply.code(400);
-        return { error: `Unknown action: ${action}` };
-    }
-
-    const state = deps.sequencer.getState();
-    deps.wsHub.broadcast({ type: "state", payload: state });
-    return state;
   });
 }

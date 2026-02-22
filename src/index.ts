@@ -9,7 +9,6 @@ import { ProgramStore } from "./core/program-store.js";
 import { Sequencer } from "./core/sequencer.js";
 import { Renderer } from "./core/renderer.js";
 import { buildRenderPacket } from "./core/render-packet.js";
-import { SimulatorOutput } from "./outputs/simulator-output.js";
 import { ArtnetOutput } from "./outputs/artnet-output.js";
 import { MqttOutput } from "./outputs/mqtt-output.js";
 import { registerRoutes } from "./api/routes.js";
@@ -44,8 +43,7 @@ async function buildServer() {
   const sequencer = new Sequencer();
   const wsHub = new WsHub();
 
-  const simulatorOutput = new SimulatorOutput();
-  const renderer = new Renderer([simulatorOutput, new ArtnetOutput(), new MqttOutput()]);
+  const renderer = new Renderer([new ArtnetOutput(), new MqttOutput()]);
 
   const applyProgram = (programId: string): void => {
     const program = programStore.get(programId);
@@ -94,10 +92,6 @@ async function buildServer() {
     renderer.render(packet);
   });
 
-  simulatorOutput.subscribe((packet) => {
-    wsHub.broadcast({ type: "state", payload: packet.frame.state });
-  });
-
   await registerRoutes(app, { config, programStore, sequencer, wsHub });
 
   app.get("/ws", { websocket: true }, (connection) => {
@@ -142,7 +136,6 @@ async function buildServer() {
       type: "config",
       payload: { fixtures: config.fixtures, environments: config.environments },
     });
-    wsHub.broadcast({ type: "state", payload: sequencer.getState() });
 
     const socket = connectionSocket(connection as ConnectionLike);
     const initialFrameEvent: ServerEvent = { type: "frame", payload: sequencer.getFrame() };

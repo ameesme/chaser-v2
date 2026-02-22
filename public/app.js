@@ -1,8 +1,4 @@
 const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
-const debugSyncParam = new URLSearchParams(location.search).get("debugSync");
-if (debugSyncParam === "1") localStorage.setItem("debugSync", "1");
-if (debugSyncParam === "0") localStorage.removeItem("debugSync");
-const DEBUG_SYNC = localStorage.getItem("debugSync") === "1";
 
 const CELL_PX = 34;
 const FIXTURE_LABEL_WIDTH = 190;
@@ -79,7 +75,6 @@ const defaultColorPresets = [
 ];
 
 function send(event) {
-  if (DEBUG_SYNC) console.debug("[sync-debug] send", event.type, event.payload ?? null);
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(event));
 }
 
@@ -104,15 +99,6 @@ function setMobileTab(tab) {
 
 function markProgramDirty() {
   state.editVersion += 1;
-}
-
-function summarizeProgramFrames(program, stepIndex) {
-  const steps = Array.isArray(program?.steps) ? program.steps : [];
-  let totalFrames = 0;
-  for (const step of steps) totalFrames += Array.isArray(step.frames) ? step.frames.length : 0;
-  const step = steps[Math.max(0, Math.min(steps.length - 1, stepIndex))];
-  const stepFrames = Array.isArray(step?.frames) ? step.frames.length : 0;
-  return { totalFrames, stepFrames };
 }
 
 async function loadColorPresets() {
@@ -1013,15 +999,6 @@ function renderStepGrid() {
         }
 
         updateCellPreview(cell, fixture.id, stepIndex, def);
-        if (DEBUG_SYNC) {
-          console.debug("[sync-debug] paint", {
-            fixtureId: fixture.id,
-            stepIndex,
-            currentPlayheadStep: state.currentPlayheadStep,
-            drawTool: state.drawTool,
-            changed,
-          });
-        }
         if (stepIndex === state.currentPlayheadStep) {
           scheduleLiveSync();
         }
@@ -1054,25 +1031,45 @@ function renderStepGrid() {
 }
 
 function updateSimulator(frame) {
-  if (DEBUG_SYNC && state.currentPlayheadStep !== frame?.state?.stepIndex) {
-    console.debug("[sync-debug] frame step mismatch", {
-      uiStep: state.currentPlayheadStep,
-      serverStep: frame?.state?.stepIndex,
-      runningProgramId: state.runningProgramId,
-      selectedProgramId: state.selectedProgramId,
-    });
-  }
-  state.lastFrame = frame;
-  state.runningProgramId = frame?.state?.programId ?? state.runningProgramId;
-  drawSimulator(frame);
+  if (!frame?.state) return;
 
-  if (state.currentPlayheadStep !== frame.state.stepIndex) {
-    state.currentPlayheadStep = frame.state.stepIndex;
+  const frameState = frame.state;
+  const previousRunningProgramId = state.runningProgramId;
+  state.lastFrame = frame;
+  state.runningProgramId = frameState.programId ?? state.runningProgramId;
+  state.isBlackout = Boolean(frameState.isBlackout);
+  updateBlackoutUi();
+
+  if (
+    state.runningProgramId
+    && state.runningProgramId !== state.selectedProgramId
+    && state.programs.some((program) => program.id === state.runningProgramId)
+    && previousRunningProgramId !== state.runningProgramId
+  ) {
+    fillProgramSelect();
+    renderPalette();
     renderStepGrid();
   }
 
-  if (state.isPlaying !== frame.state.isPlaying) {
-    state.isPlaying = frame.state.isPlaying;
+  const baseSpm = isLockedSpmActive()
+    ? clampSpm(state.lockedSpm)
+    : clampSpm(frameState.spm / currentSpmMultiplier());
+  const targetSpm = effectiveSpmFromBase(baseSpm);
+  spmInput.value = String(baseSpm);
+  if (frameState.spm !== targetSpm) {
+    send({ type: "tempo", payload: { spm: targetSpm } });
+  }
+  setLoopEnabled(Boolean(frameState.loop));
+
+  drawSimulator(frame);
+
+  if (state.currentPlayheadStep !== frameState.stepIndex) {
+    state.currentPlayheadStep = frameState.stepIndex;
+    renderStepGrid();
+  }
+
+  if (state.isPlaying !== frameState.isPlaying) {
+    state.isPlaying = frameState.isPlaying;
     updatePlayPauseLabel();
   }
 }
@@ -1081,18 +1078,6 @@ async function saveProgramNow() {
   const program = selectedProgram();
   if (!program) return;
   const targetVersion = state.editVersion;
-  if (DEBUG_SYNC) {
-    const frameSummary = summarizeProgramFrames(program, state.currentPlayheadStep);
-    console.debug("[sync-debug] save start", {
-      selectedProgramId: state.selectedProgramId,
-      runningProgramId: state.runningProgramId,
-      stepIndex: state.currentPlayheadStep,
-      steps: program.steps.length,
-      totalFrames: frameSummary.totalFrames,
-      stepFrames: frameSummary.stepFrames,
-      targetVersion,
-    });
-  }
 
   const response = await fetch(`/api/programs/${program.id}`, {
     method: "PUT",
@@ -1107,15 +1092,6 @@ async function saveProgramNow() {
 
   const updated = await response.json();
   state.lastSavedVersion = Math.max(state.lastSavedVersion, targetVersion);
-  if (DEBUG_SYNC) {
-    console.debug("[sync-debug] save done", {
-      updatedProgramId: updated.id,
-      stepIndex: state.currentPlayheadStep,
-      steps: updated.steps.length,
-      lastSavedVersion: state.lastSavedVersion,
-      editVersion: state.editVersion,
-    });
-  }
 }
 
 async function queueAutoSave() {
@@ -1128,10 +1104,7 @@ async function queueAutoSave() {
   state.saveInFlight = true;
   try {
     await saveProgramNow();
-  } catch (error) {
-    if (DEBUG_SYNC) {
-      console.debug("[sync-debug] save error", error);
-    }
+  } catch (_error) {
     // Do not block editing on save errors.
   } finally {
     state.saveInFlight = false;
@@ -1156,12 +1129,6 @@ function scheduleLiveSync() {
   if (state.liveSyncTimerId) return;
   state.liveSyncTimerId = setTimeout(() => {
     state.liveSyncTimerId = null;
-    if (DEBUG_SYNC) {
-      console.debug("[sync-debug] live sync flush", {
-        stepIndex: state.currentPlayheadStep,
-        selectedProgramId: state.selectedProgramId,
-      });
-    }
     queueAutoSave();
   }, 120);
 }
@@ -1377,52 +1344,6 @@ ws.onmessage = (message) => {
   if (event.type === "config") applyConfig(event.payload);
   if (event.type === "programs") applyPrograms(event.payload);
   if (event.type === "frame") updateSimulator(event.payload);
-  if (event.type === "state") {
-    const { spm, loop, isPlaying, isBlackout, stepIndex, programId } = event.payload;
-    const previousRunningProgramId = state.runningProgramId;
-    state.runningProgramId = programId ?? state.runningProgramId;
-    state.isPlaying = Boolean(isPlaying);
-    state.isBlackout = Boolean(isBlackout);
-    state.currentPlayheadStep = Math.max(0, Number(stepIndex) || 0);
-    updatePlayPauseLabel();
-    updateBlackoutUi();
-    if (DEBUG_SYNC) {
-      console.debug("[sync-debug] state", {
-        stepIndex: state.currentPlayheadStep,
-        isPlaying: state.isPlaying,
-        isBlackout: state.isBlackout,
-        runningProgramId: state.runningProgramId,
-        selectedProgramId: state.selectedProgramId,
-        spm,
-        loop,
-      });
-    }
-
-    if (
-      state.runningProgramId
-      && state.runningProgramId !== state.selectedProgramId
-      && state.programs.some((program) => program.id === state.runningProgramId)
-      && previousRunningProgramId !== state.runningProgramId
-    ) {
-      fillProgramSelect();
-      renderPalette();
-      renderStepGrid();
-      if (state.lastFrame) requestAnimationFrame(() => drawSimulator(state.lastFrame));
-    }
-
-    const baseSpm = isLockedSpmActive()
-      ? clampSpm(state.lockedSpm)
-      : clampSpm(spm / currentSpmMultiplier());
-    const targetSpm = effectiveSpmFromBase(baseSpm);
-    spmInput.value = String(baseSpm);
-    if (spm !== targetSpm) {
-      send({ type: "tempo", payload: { spm: targetSpm } });
-    }
-    setLoopEnabled(Boolean(loop));
-    renderStepGrid();
-
-    if (state.lastFrame) requestAnimationFrame(() => drawSimulator(state.lastFrame));
-  }
 };
 
 updatePlayPauseLabel();
