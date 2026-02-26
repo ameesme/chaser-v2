@@ -1,0 +1,52 @@
+name: "Chaser DMX Lighting Sequencer"
+version: "0.1.0"
+slug: "chaser_dmx"
+description: "Real-time DMX lighting sequencer with ArtNet and MQTT control"
+url: "https://github.com/yourusername/chaser-v2"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+init: false
+startup: application
+boot: auto
+host_network: false
+hassio_api: true
+homeassistant_api: false
+
+ports:
+  3000/tcp: 3000
+
+ports_description:
+  3000/tcp: "Web UI and WebSocket interface"
+
+webui: "http://[HOST]:[PORT:3000]"
+
+map:
+  - config:rw
+
+options:
+  port: 3000
+  debug: false
+  artnet_refresh_ms: 40
+  mqtt_enabled: true
+  mqtt_auto_configure: true
+  mqtt_broker: "core-mosquitto"
+  mqtt_port: 1883
+  mqtt_username: ""
+  mqtt_password: ""
+  mqtt_discovery_prefix: "homeassistant"
+  mqtt_node_id: "chaser_dmx"
+
+schema:
+  port: "port"
+  debug: "bool"
+  artnet_refresh_ms: "int(20,1000)"
+  mqtt_enabled: "bool"
+  mqtt_auto_configure: "bool"
+  mqtt_broker: "str"
+  mqtt_port: "port"
+  mqtt_username: "str?"
+  mqtt_password: "password?"
+  mqtt_discovery_prefix: "str"
+  mqtt_node_id: "str"

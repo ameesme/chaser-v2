@@ -1,0 +1,42 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+dist
+*.log
+npm-debug.log*
+
+# IDE and editors
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+LICENSE
+
+# Addon directory (not needed in image, files copied explicitly)
+addon/
+
+# Development and testing
+.env
+.env.*
+test/
+tests/
+*.test.ts
+*.spec.ts
+
+# Build artifacts
+coverage/
+.nyc_output/
