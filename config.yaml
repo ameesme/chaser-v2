@@ -2,7 +2,7 @@ name: "Chaser DMX Lighting Sequencer"
 version: "0.1.0"
 slug: "chaser_dmx"
 description: "Real-time DMX lighting sequencer with ArtNet and MQTT control"
-url: "https://github.com/yourusername/chaser-v2"
+url: "https://github.com/ameesme/chaser-v2"
 arch:
   - amd64
   - aarch64
