@@ -33,6 +33,7 @@ export type EnvironmentFixture = {
   address: number;
   position2d: { x: number; y: number };
   orientationDeg?: number;
+  mqttExpose?: boolean;
 };
 
 export type OutputDefinition =
@@ -54,7 +55,13 @@ export type OutputDefinition =
       type: "mqtt";
       enabled: boolean;
       brokerUrl: string;
-      topic: string;
+      topic?: string;
+      baseTopic?: string;
+      discoveryPrefix?: string;
+      nodeId?: string;
+      clientId?: string;
+      username?: string;
+      password?: string;
     };
 
 export type EnvironmentDefinition = {

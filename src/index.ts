@@ -43,8 +43,6 @@ async function buildServer() {
   const sequencer = new Sequencer();
   const wsHub = new WsHub();
 
-  const renderer = new Renderer([new ArtnetOutput(), new MqttOutput()]);
-
   const applyProgram = (programId: string): void => {
     const program = programStore.get(programId);
     if (!program) return;
@@ -52,6 +50,29 @@ async function buildServer() {
     const environment = config.environments.find((item) => item.id === program.environmentId);
     sequencer.setFrameRate(environment?.renderFps ?? 30);
   };
+
+  const renderer = new Renderer([
+    new ArtnetOutput(),
+    new MqttOutput(config, {
+      setLayerAValue: (fixtureId, featureId, value) => sequencer.setLayerAValue(fixtureId, featureId, value),
+      clearLayerAFeature: (fixtureId, featureId) => sequencer.clearLayerAFeature(fixtureId, featureId),
+      clearLayerAFixture: (fixtureId) => sequencer.clearLayerAFixture(fixtureId),
+      applyLayerABatch: (operations) => sequencer.applyLayerABatch(operations),
+      setSpm: (spm) => sequencer.setSpm(spm),
+      setBlackout: (enabled) => sequencer.setBlackout(enabled),
+      pause: () => sequencer.pause(),
+      playFromStart: () => {
+        sequencer.setStep(0);
+        sequencer.resume();
+      },
+      triggerProgram: (programId) => {
+        applyProgram(programId);
+        sequencer.setStep(0);
+        sequencer.resume();
+      },
+      listPrograms: () => programStore.list(),
+    }),
+  ]);
 
   sequencer.subscribe((frame) => {
     wsHub.broadcast({ type: "frame", payload: frame });

@@ -3,6 +3,11 @@ import { performance } from "node:perf_hooks";
 
 type LayerValueMap = Record<string, number[]>;
 
+export type LayerAOperation =
+  | { kind: "set"; fixtureId: string; featureId: string; value: FeatureValue }
+  | { kind: "clearFeature"; fixtureId: string; featureId: string }
+  | { kind: "clearFixture"; fixtureId: string };
+
 export type SequencerFrame = {
   timestamp: number;
   values: Record<string, number[]>;
@@ -34,6 +39,15 @@ function clampChannel(value: number): number {
 
 function isZeroValue(values: number[]): boolean {
   return values.every((value) => value <= 0);
+}
+
+function valuesEqual(left: number[] | undefined, right: number[]): boolean {
+  if (!left) return false;
+  if (left.length !== right.length) return false;
+  for (let i = 0; i < left.length; i += 1) {
+    if (left[i] !== right[i]) return false;
+  }
+  return true;
 }
 
 function cloneLayerValues(values: LayerValueMap): LayerValueMap {
@@ -209,35 +223,46 @@ export class Sequencer {
 
   setLayerAValue(fixtureId: string, featureId: string, value: FeatureValue): void {
     const key = frameKey(fixtureId, featureId);
-    const normalized = asArray(value).map((item) => clampChannel(item));
-    if (isZeroValue(normalized)) {
-      delete this.layerAValues[key];
-    } else {
-      this.layerAValues[key] = normalized;
-    }
+    const changed = this.setLayerAKey(key, value);
+    if (!changed) return;
     this.emitFrame();
     this.trace("setLayerAValue", { key, value: this.layerAValues[key] ?? [0] });
   }
 
   clearLayerAFeature(fixtureId: string, featureId: string): void {
     const key = frameKey(fixtureId, featureId);
-    if (!(key in this.layerAValues)) return;
-    delete this.layerAValues[key];
+    const changed = this.clearLayerAKey(key);
+    if (!changed) return;
     this.emitFrame();
     this.trace("clearLayerAFeature", { key });
   }
 
   clearLayerAFixture(fixtureId: string): void {
-    let changed = false;
-    const prefix = `${fixtureId}:`;
-    for (const key of Object.keys(this.layerAValues)) {
-      if (!key.startsWith(prefix)) continue;
-      delete this.layerAValues[key];
-      changed = true;
-    }
+    const changed = this.clearLayerAFixtureKeys(fixtureId);
     if (!changed) return;
     this.emitFrame();
     this.trace("clearLayerAFixture", { fixtureId });
+  }
+
+  applyLayerABatch(operations: LayerAOperation[]): void {
+    if (operations.length === 0) return;
+    let changed = false;
+    for (const operation of operations) {
+      switch (operation.kind) {
+        case "set":
+          changed = this.setLayerAKey(frameKey(operation.fixtureId, operation.featureId), operation.value) || changed;
+          break;
+        case "clearFeature":
+          changed = this.clearLayerAKey(frameKey(operation.fixtureId, operation.featureId)) || changed;
+          break;
+        case "clearFixture":
+          changed = this.clearLayerAFixtureKeys(operation.fixtureId) || changed;
+          break;
+      }
+    }
+    if (!changed) return;
+    this.emitFrame();
+    this.trace("applyLayerABatch", { operations: operations.length });
   }
 
   applyStateSnapshot(snapshot: Pick<
@@ -343,6 +368,33 @@ export class Sequencer {
         frames: [],
       });
     }
+  }
+
+  private setLayerAKey(key: string, value: FeatureValue): boolean {
+    const normalized = asArray(value).map((item) => clampChannel(item));
+    if (isZeroValue(normalized)) {
+      return this.clearLayerAKey(key);
+    }
+    if (valuesEqual(this.layerAValues[key], normalized)) return false;
+    this.layerAValues[key] = normalized;
+    return true;
+  }
+
+  private clearLayerAKey(key: string): boolean {
+    if (!(key in this.layerAValues)) return false;
+    delete this.layerAValues[key];
+    return true;
+  }
+
+  private clearLayerAFixtureKeys(fixtureId: string): boolean {
+    let changed = false;
+    const prefix = `${fixtureId}:`;
+    for (const key of Object.keys(this.layerAValues)) {
+      if (!key.startsWith(prefix)) continue;
+      delete this.layerAValues[key];
+      changed = true;
+    }
+    return changed;
   }
 
   private emitFrame(): void {
