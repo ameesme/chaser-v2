@@ -1,10 +1,10 @@
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:15.0.1
-FROM ${BUILD_FROM} as builder
+FROM ${BUILD_FROM} AS builder
 
 # Install Node.js 20 and pnpm
 RUN apk add --no-cache \
     nodejs=~20 \
-    npm=~20 \
+    npm \
     && npm install -g pnpm@9
 
 WORKDIR /build
@@ -32,7 +32,7 @@ FROM ${BUILD_FROM}
 
 # Install only Node.js runtime (no build tools)
 RUN apk add --no-cache \
-    nodejs=~20 \
+    nodejs \
     jq
 
 WORKDIR /app
