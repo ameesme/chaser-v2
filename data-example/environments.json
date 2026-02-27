@@ -1,0 +1,300 @@
+[
+  {
+    "id": "env-studio-a",
+    "name": "Studio",
+    "dimensionsMm": {
+      "width": 10000,
+      "height": 6000
+    },
+    "renderFps": 30,
+    "fixtures": [
+      {
+        "id": "fx-1",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 1",
+        "universe": 0,
+        "address": 1,
+        "position2d": {
+          "x": 4900,
+          "y": 8520
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-2",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 2",
+        "universe": 0,
+        "address": 6,
+        "position2d": {
+          "x": 4280,
+          "y": 8520
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-3",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 3",
+        "universe": 0,
+        "address": 11,
+        "position2d": {
+          "x": 4900,
+          "y": 7300
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-4",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 4",
+        "universe": 0,
+        "address": 16,
+        "position2d": {
+          "x": 4280,
+          "y": 7300
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-5",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 5",
+        "universe": 0,
+        "address": 21,
+        "position2d": {
+          "x": 4900,
+          "y": 6080
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-6",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 6",
+        "universe": 0,
+        "address": 26,
+        "position2d": {
+          "x": 4280,
+          "y": 6080
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-7",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 7",
+        "universe": 0,
+        "address": 31,
+        "position2d": {
+          "x": 4900,
+          "y": 4860
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-8",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 8",
+        "universe": 0,
+        "address": 36,
+        "position2d": {
+          "x": 4280,
+          "y": 4860
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-9",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 9",
+        "universe": 0,
+        "address": 41,
+        "position2d": {
+          "x": 4900,
+          "y": 3640
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-10",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 10",
+        "universe": 0,
+        "address": 46,
+        "position2d": {
+          "x": 4280,
+          "y": 3640
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-11",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 11",
+        "universe": 0,
+        "address": 51,
+        "position2d": {
+          "x": 4900,
+          "y": 2420
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-12",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 12",
+        "universe": 0,
+        "address": 56,
+        "position2d": {
+          "x": 4280,
+          "y": 2420
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-13",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 13",
+        "universe": 0,
+        "address": 61,
+        "position2d": {
+          "x": 4900,
+          "y": 1200
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-14",
+        "fixtureTypeId": "fixture-rgbcct-5ch",
+        "name": "Panel 14",
+        "universe": 0,
+        "address": 66,
+        "position2d": {
+          "x": 4280,
+          "y": 1200
+        },
+        "orientationDeg": 90
+      },
+      {
+        "id": "fx-16",
+        "fixtureTypeId": "fixture-rgbcct-bar-5ch",
+        "name": "Wall Left",
+        "universe": 1,
+        "address": 113,
+        "position2d": {
+          "x": 1000,
+          "y": 4100
+        },
+        "orientationDeg": 90,
+        "mqttExpose": false
+      },
+      {
+        "id": "fx-15",
+        "fixtureTypeId": "fixture-rgbcct-bar-5ch",
+        "name": "Wall Right",
+        "universe": 1,
+        "address": 121,
+        "position2d": {
+          "x": 2800,
+          "y": 3900
+        },
+        "orientationDeg": 90,
+        "mqttExpose": false
+      },
+      {
+        "id": "fx-17",
+        "fixtureTypeId": "fixture-dimmer-1ch",
+        "name": "Bulb 1",
+        "universe": 1,
+        "address": 129,
+        "position2d": {
+          "x": 5950,
+          "y": 6000
+        },
+        "orientationDeg": 90,
+        "mqttExpose": false
+      },
+      {
+        "id": "fx-18",
+        "fixtureTypeId": "fixture-dimmer-1ch",
+        "name": "Bulb 2",
+        "universe": 1,
+        "address": 130,
+        "position2d": {
+          "x": 5950,
+          "y": 5500
+        },
+        "orientationDeg": 90,
+        "mqttExpose": false
+      },
+      {
+        "id": "fx-19",
+        "fixtureTypeId": "fixture-dimmer-1ch",
+        "name": "Bulb 3",
+        "universe": 1,
+        "address": 131,
+        "position2d": {
+          "x": 5950,
+          "y": 5000
+        },
+        "orientationDeg": 90,
+        "mqttExpose": false
+      },
+      {
+        "id": "fx-20",
+        "fixtureTypeId": "fixture-dimmer-1ch",
+        "name": "Bulb 4",
+        "universe": 1,
+        "address": 132,
+        "position2d": {
+          "x": 5950,
+          "y": 4500
+        },
+        "orientationDeg": 90,
+        "mqttExpose": false
+      },
+      {
+        "id": "fx-21",
+        "fixtureTypeId": "fixture-dimmer-1ch",
+        "name": "Bulb 5",
+        "universe": 1,
+        "address": 133,
+        "position2d": {
+          "x": 5950,
+          "y": 4000
+        },
+        "orientationDeg": 90,
+        "mqttExpose": false
+      }
+    ],
+    "outputs": [
+      {
+        "id": "sim-out",
+        "type": "simulator",
+        "enabled": true
+      },
+      {
+        "id": "artnet-main",
+        "type": "artnet",
+        "enabled": true,
+        "host": "192.168.50.122",
+        "port": 6454,
+        "universes": [0]
+      },
+      {
+        "id": "mqtt-main",
+        "type": "mqtt",
+        "enabled": true,
+        "brokerUrl": "mqtt://192.168.50.81:1883",
+        "username": "chaser",
+        "password": "ULrXZdhqAxRvXw2ERbwh",
+        "clientId": "chaser-dmx",
+        "topic": "chaser/output",
+        "baseTopic": "chaser",
+        "discoveryPrefix": "homeassistant",
+        "nodeId": "chaser_dmx"
+      }
+    ]
+  }
+]

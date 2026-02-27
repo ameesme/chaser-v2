@@ -1,0 +1,3423 @@
+[
+  {
+    "id": "prog-bounce",
+    "name": "Black",
+    "environmentId": "env-studio-a",
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": []
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": []
+      }
+    ],
+    "spm": 100,
+    "loop": false
+  },
+  {
+    "id": "homecoming-1770754869843",
+    "name": "Homecoming",
+    "environmentId": "env-studio-a",
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 255
+          }
+        ]
+      },
+      {
+        "id": "step-3",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              50,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "white-cct",
+            "value": [
+              50,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-18",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 50
+          }
+        ]
+      },
+      {
+        "id": "step-4",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              30,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "white-cct",
+            "value": [
+              30,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-19",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 50
+          },
+          {
+            "fixtureId": "fx-18",
+            "featureId": "dimmer",
+            "value": 50
+          }
+        ]
+      },
+      {
+        "id": "step-5",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              30,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "white-cct",
+            "value": [
+              30,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-20",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 50
+          },
+          {
+            "fixtureId": "fx-18",
+            "featureId": "dimmer",
+            "value": 50
+          },
+          {
+            "fixtureId": "fx-19",
+            "featureId": "dimmer",
+            "value": 50
+          }
+        ]
+      },
+      {
+        "id": "step-6",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-7",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              87,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-8",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              10,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "spm": 300,
+    "loop": false
+  },
+  {
+    "id": "phaser-1770757344005",
+    "name": "Phaser",
+    "environmentId": "env-studio-a",
+    "spm": 132,
+    "loop": true,
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 255
+          }
+        ]
+      },
+      {
+        "id": "step-3",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-18",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 255
+          }
+        ]
+      },
+      {
+        "id": "step-4",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-19",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-18",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-5",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-20",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-19",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-6",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-21",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-20",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-7",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-21",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-8",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": []
+      }
+    ]
+  },
+  {
+    "id": "strobe-1770757929216",
+    "name": "Strobe",
+    "environmentId": "env-studio-a",
+    "spm": 388,
+    "loop": true,
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 0,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-18",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-19",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-20",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-21",
+            "featureId": "dimmer",
+            "value": 255
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 0,
+        "frames": []
+      }
+    ]
+  },
+  {
+    "id": "checkerboard-1770842196600",
+    "name": "Checkerboard",
+    "environmentId": "env-studio-a",
+    "spm": 220,
+    "loop": true,
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-17",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-18",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": []
+      },
+      {
+        "id": "step-3",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": []
+      },
+      {
+        "id": "step-4",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": []
+      },
+      {
+        "id": "step-5",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": [
+          {
+            "fixtureId": "fx-20",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-21",
+            "featureId": "dimmer",
+            "value": 255
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "white-cct",
+            "value": [
+              0,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-6",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": []
+      },
+      {
+        "id": "step-7",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": []
+      },
+      {
+        "id": "step-8",
+        "durationMs": 500,
+        "fadeMs": 300,
+        "frames": []
+      }
+    ]
+  },
+  {
+    "id": "warm-pulse-1771509425333",
+    "name": "Warm Pulse",
+    "environmentId": "env-studio-a",
+    "spm": 104,
+    "loop": true,
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-3",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-4",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-5",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-6",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-7",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              63,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-8",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-8",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "white-cct",
+            "value": [
+              11,
+              0
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "homecoming-1771517555228",
+    "name": "White",
+    "environmentId": "env-studio-a",
+    "spm": 300,
+    "loop": true,
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 0,
+        "frames": [
+          {
+            "fixtureId": "fx-13",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 0,
+        "frames": [
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-3",
+        "durationMs": 500,
+        "fadeMs": 0,
+        "frames": [
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-16",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-4",
+        "durationMs": 500,
+        "fadeMs": 0,
+        "frames": [
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-15",
+            "featureId": "color-rgb",
+            "value": [
+              35,
+              9,
+              0
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alarm-pending-1771878594809",
+    "name": "Alarm Pending",
+    "environmentId": "env-studio-a",
+    "spm": 60,
+    "loop": false,
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": []
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-3",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-4",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-5",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-8",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-6",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-10",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-7",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-8",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-14",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alarm-triggered-1771878708881",
+    "name": "Alarm Triggered",
+    "environmentId": "env-studio-a",
+    "spm": 120,
+    "loop": true,
+    "steps": [
+      {
+        "id": "step-1",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-14",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "color-rgb",
+            "value": [
+              255,
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-2",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": []
+      },
+      {
+        "id": "step-3",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": [
+          {
+            "fixtureId": "fx-14",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-13",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-12",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-11",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-10",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-9",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-8",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-7",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-6",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-5",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-1",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-2",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-3",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          },
+          {
+            "fixtureId": "fx-4",
+            "featureId": "color-rgb",
+            "value": [
+              200,
+              228,
+              255
+            ]
+          }
+        ]
+      },
+      {
+        "id": "step-4",
+        "durationMs": 500,
+        "fadeMs": 200,
+        "frames": []
+      }
+    ]
+  }
+]
