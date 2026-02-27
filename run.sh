@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bashio
 
 # Parse addon options
-export PORT=$(bashio::config 'port')
+export PORT=3000
 export CHASER_ARTNET_REFRESH_MS=$(bashio::config 'artnet_refresh_ms')
 
 if bashio::config.true 'debug'; then
@@ -84,7 +84,7 @@ cd /app
 
 # Log startup information
 bashio::log.info "Starting Chaser DMX Sequencer v0.1.0"
-bashio::log.info "Web UI: http://[HOST]:${PORT}"
+bashio::log.info "Web UI available via Home Assistant sidebar (Ingress)"
 bashio::log.info "Data directory: ${DATA_DIR}"
 
 # Start the Node.js application
