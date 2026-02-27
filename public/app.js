@@ -1,4 +1,7 @@
-const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
+// Construct WebSocket URL relative to current location for ingress compatibility
+const basePath = location.pathname.replace(/\/$/, '');
+const wsProtocol = location.protocol === "https:" ? "wss" : "ws";
+const ws = new WebSocket(`${wsProtocol}://${location.host}${basePath}/ws`);
 
 const CELL_PX = 34;
 const FIXTURE_LABEL_WIDTH = 190;
@@ -105,7 +108,7 @@ function markProgramDirty() {
 
 async function loadColorPresets() {
   try {
-    const response = await fetch("/color-presets.json", { cache: "no-cache" });
+    const response = await fetch("./color-presets.json", { cache: "no-cache" });
     if (!response.ok) throw new Error(`Preset load failed: ${response.status}`);
     const parsed = await response.json();
     if (!Array.isArray(parsed)) throw new Error("Preset file is not an array");
@@ -1286,7 +1289,7 @@ async function saveProgramNow() {
   if (!program) return;
   const targetVersion = state.editVersion;
 
-  const response = await fetch(`/api/programs/${program.id}`, {
+  const response = await fetch(`./api/programs/${program.id}`, {
     method: "PUT",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(program),
@@ -1361,7 +1364,7 @@ async function createProgram() {
     })),
   };
 
-  const response = await fetch("/api/programs", {
+  const response = await fetch("./api/programs", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(program),
@@ -1394,7 +1397,7 @@ async function deleteProgram() {
   const confirmed = window.confirm(`Delete program "${program.name}"?`);
   if (!confirmed) return;
 
-  const response = await fetch(`/api/programs/${program.id}`, { method: "DELETE" });
+  const response = await fetch(`./api/programs/${program.id}`, { method: "DELETE" });
   if (!response.ok) {
     alert("Failed to delete program");
     return;
