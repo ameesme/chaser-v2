@@ -241,30 +241,37 @@ export class Sequencer {
   }
 
   setLayerAValue(fixtureId: string, featureId: string, value: FeatureValue): void {
+    const fromValues = this.getVisibleMixMode() === "static" ? this.captureVisibleValues() : null;
     const key = frameKey(fixtureId, featureId);
     const changed = this.setLayerAKey(key, value);
     if (!changed) return;
+    if (fromValues) this.beginModeTransition("static", fromValues);
     this.emitFrame();
     this.trace("setLayerAValue", { key, value: this.layerAValues[key] ?? [0] });
   }
 
   clearLayerAFeature(fixtureId: string, featureId: string): void {
+    const fromValues = this.getVisibleMixMode() === "static" ? this.captureVisibleValues() : null;
     const key = frameKey(fixtureId, featureId);
     const changed = this.clearLayerAKey(key);
     if (!changed) return;
+    if (fromValues) this.beginModeTransition("static", fromValues);
     this.emitFrame();
     this.trace("clearLayerAFeature", { key });
   }
 
   clearLayerAFixture(fixtureId: string): void {
+    const fromValues = this.getVisibleMixMode() === "static" ? this.captureVisibleValues() : null;
     const changed = this.clearLayerAFixtureKeys(fixtureId);
     if (!changed) return;
+    if (fromValues) this.beginModeTransition("static", fromValues);
     this.emitFrame();
     this.trace("clearLayerAFixture", { fixtureId });
   }
 
   applyLayerABatch(operations: LayerAOperation[]): void {
     if (operations.length === 0) return;
+    const fromValues = this.getVisibleMixMode() === "static" ? this.captureVisibleValues() : null;
     let changed = false;
     for (const operation of operations) {
       switch (operation.kind) {
@@ -280,6 +287,7 @@ export class Sequencer {
       }
     }
     if (!changed) return;
+    if (fromValues) this.beginModeTransition("static", fromValues);
     this.emitFrame();
     this.trace("applyLayerABatch", { operations: operations.length });
   }

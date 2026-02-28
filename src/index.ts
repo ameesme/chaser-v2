@@ -14,6 +14,7 @@ import { MqttOutput } from "./outputs/mqtt-output.js";
 import { registerRoutes } from "./api/routes.js";
 import { WsHub } from "./ws/hub.js";
 import type { ClientEvent, ServerEvent } from "./ws/protocol.js";
+import type { RuntimeConfig } from "./config/types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,6 +27,27 @@ type ConnectionLike = { socket: WebSocketLike } | WebSocketLike;
 
 function connectionSocket(connection: ConnectionLike): WebSocketLike {
   return "socket" in connection ? connection.socket : connection;
+}
+
+function applyDefaultStaticPanelValues(config: RuntimeConfig, sequencer: Sequencer): void {
+  const panelFixtureType = config.fixtures.find((fixture) => fixture.id === "fixture-rgbcct-5ch");
+  const cctFeatureId = panelFixtureType?.features.find((feature) => feature.kind === "cct")?.id;
+  if (!cctFeatureId) return;
+
+  const environment = config.environments.find((item) => item.id === "env-studio-a");
+  if (!environment) return;
+
+  const panelOperations = environment.fixtures
+    .filter((fixture) => fixture.fixtureTypeId === "fixture-rgbcct-5ch")
+    .map((fixture) => ({
+      kind: "set" as const,
+      fixtureId: fixture.id,
+      featureId: cctFeatureId,
+      value: [128, 128],
+    }));
+
+  if (panelOperations.length === 0) return;
+  sequencer.applyLayerABatch(panelOperations);
 }
 
 async function buildServer() {
@@ -176,6 +198,7 @@ async function buildServer() {
   if (defaultProgram) {
     applyProgram(defaultProgram.id);
   }
+  applyDefaultStaticPanelValues(config, sequencer);
 
   app.get("/", async (_, reply) => {
     return reply.sendFile("index.html");
