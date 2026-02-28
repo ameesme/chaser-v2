@@ -48,6 +48,10 @@ textarea {
   gap: 8px;
 }
 
+.tempo-nudge-btn {
+  display: none;
+}
+
 .toolbar-group {
   display: grid;
   gap: 6px;
@@ -407,10 +411,25 @@ input:hover {
     width: 100%;
   }
 
+  .tempo-row .tempo-nudge-btn {
+    display: block;
+    min-height: 52px;
+  }
+
+  .tempo-row #spmDownBtn {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
   .tempo-row #tapSyncBtn {
-    grid-column: 1 / 4;
+    grid-column: 2;
     grid-row: 1;
     min-height: 52px;
+  }
+
+  .tempo-row #spmUpBtn {
+    grid-column: 3;
+    grid-row: 1;
   }
 
   .tempo-row #spmInput {

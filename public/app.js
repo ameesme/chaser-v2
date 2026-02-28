@@ -18,7 +18,9 @@ const nextBtn = document.getElementById("nextBtn");
 const seekEndBtn = document.getElementById("seekEndBtn");
 const blackoutBtn = document.getElementById("blackoutBtn");
 const loopInput = document.getElementById("loopInput");
+const spmDownBtn = document.getElementById("spmDownBtn");
 const tapSyncBtn = document.getElementById("tapSyncBtn");
+const spmUpBtn = document.getElementById("spmUpBtn");
 const lockSpmInput = document.getElementById("lockSpmInput");
 const spmInput = document.getElementById("spmInput");
 const spmMultiplierSelect = document.getElementById("spmMultiplierSelect");
@@ -205,6 +207,19 @@ function clampSpm(value) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 120;
   return Math.max(1, Math.min(500, Math.round(parsed)));
+}
+
+function applyBaseSpmChange(baseSpm) {
+  const clamped = clampSpm(baseSpm);
+  spmInput.value = String(clamped);
+  deactivateTapSync();
+  const program = selectedProgram();
+  if (program) {
+    program.spm = clamped;
+    markProgramDirty();
+    scheduleAutoSave();
+  }
+  send({ type: "tempo", payload: { spm: effectiveSpmFromBase(clamped) } });
 }
 
 function currentSpmMultiplier() {
@@ -1463,16 +1478,7 @@ blackoutBtn.onclick = () => {
 };
 
 spmInput.oninput = () => {
-  const baseSpm = clampSpm(spmInput.value);
-  spmInput.value = String(baseSpm);
-  deactivateTapSync();
-  const program = selectedProgram();
-  if (program) {
-    program.spm = baseSpm;
-    markProgramDirty();
-    scheduleAutoSave();
-  }
-  send({ type: "tempo", payload: { spm: effectiveSpmFromBase(baseSpm) } });
+  applyBaseSpmChange(spmInput.value);
 };
 
 spmMultiplierSelect.onchange = () => {
@@ -1515,6 +1521,14 @@ loopInput.onclick = () => {
 
 tapSyncBtn.onclick = () => {
   handleTapSync();
+};
+
+spmDownBtn.onclick = () => {
+  applyBaseSpmChange(Number(spmInput.value) - 1);
+};
+
+spmUpBtn.onclick = () => {
+  applyBaseSpmChange(Number(spmInput.value) + 1);
 };
 
 lockSpmInput.onclick = () => {
