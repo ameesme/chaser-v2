@@ -2,6 +2,14 @@ import type { FeatureValue, PlayheadState, ProgramDefinition } from "../config/t
 import { performance } from "node:perf_hooks";
 
 type LayerValueMap = Record<string, number[]>;
+type VisibleMixMode = "static" | "sequencer";
+type MixTransition = {
+  startedAtMs: number;
+  fromValues: LayerValueMap;
+  toMode: VisibleMixMode;
+};
+
+const MODE_SWITCH_FADE_MS = 500;
 
 export type LayerAOperation =
   | { kind: "set"; fixtureId: string; featureId: string; value: FeatureValue }
@@ -58,18 +66,18 @@ function cloneLayerValues(values: LayerValueMap): LayerValueMap {
   return clone;
 }
 
-function addLayerValues(layerA: LayerValueMap, layerB: LayerValueMap): LayerValueMap {
+function interpolateLayerValues(fromValues: LayerValueMap, toValues: LayerValueMap, ratio: number): LayerValueMap {
   const combined: LayerValueMap = {};
-  const keys = new Set([...Object.keys(layerA), ...Object.keys(layerB)]);
+  const keys = new Set([...Object.keys(fromValues), ...Object.keys(toValues)]);
   for (const key of keys) {
-    const a = layerA[key] ?? [0];
-    const b = layerB[key] ?? [0];
-    const length = Math.max(a.length, b.length);
+    const from = fromValues[key] ?? [0];
+    const to = toValues[key] ?? [0];
+    const length = Math.max(from.length, to.length);
     const out: number[] = [];
     for (let i = 0; i < length; i += 1) {
-      const aValue = a[i] ?? a[0] ?? 0;
-      const bValue = b[i] ?? b[0] ?? 0;
-      out.push(clampChannel(aValue + bValue));
+      const fromValue = from[i] ?? from[0] ?? 0;
+      const toValue = to[i] ?? to[0] ?? 0;
+      out.push(clampChannel(fromValue + (toValue - fromValue) * ratio));
     }
     if (!isZeroValue(out)) combined[key] = out;
   }
@@ -88,11 +96,13 @@ export class Sequencer {
   };
 
   private timer: NodeJS.Timeout | null = null;
+  private mixTimer: NodeJS.Timeout | null = null;
   private frameIntervalMs = 33;
   private lastTickAtMs: number | null = null;
   private listeners = new Set<(frame: SequencerFrame) => void>();
   private activeProgram: ProgramDefinition | null = null;
   private layerAValues: LayerValueMap = {};
+  private mixTransition: MixTransition | null = null;
   private debug = process.env.CHASER_DEBUG === "1";
 
   setProgram(program: ProgramDefinition, options?: { preservePlayhead?: boolean; suppressEmit?: boolean }): void {
@@ -134,9 +144,11 @@ export class Sequencer {
   play(): void {
     if (!this.activeProgram) return;
     if (this.state.isPlaying) return;
+    const fromValues = this.captureVisibleValues();
     this.state.stepIndex = 0;
     this.state.positionMs = 0;
     this.state.isPlaying = true;
+    this.beginModeTransition("sequencer", fromValues);
     this.emitFrame();
     this.startTimer();
     this.trace("play", { state: this.state });
@@ -145,15 +157,19 @@ export class Sequencer {
   resume(): void {
     if (!this.activeProgram) return;
     if (this.state.isPlaying) return;
+    const fromValues = this.captureVisibleValues();
     this.state.isPlaying = true;
+    this.beginModeTransition("sequencer", fromValues);
     this.emitFrame();
     this.startTimer();
     this.trace("resume", { state: this.state });
   }
 
   pause(): void {
+    const fromValues = this.captureVisibleValues();
     this.state.isPlaying = false;
     this.stopTimer();
+    this.beginModeTransition("static", fromValues);
     this.emitFrame();
     this.trace("pause", { state: this.state });
   }
@@ -211,6 +227,9 @@ export class Sequencer {
     if (this.state.isPlaying) {
       this.stopTimer();
       this.startTimer();
+    } else if (this.mixTransition) {
+      this.stopMixTimer();
+      this.startMixTimer();
     }
     this.trace("setFrameRate", { input: fps, frameIntervalMs: this.frameIntervalMs });
   }
@@ -271,6 +290,8 @@ export class Sequencer {
   >): void {
     if (!this.activeProgram) return;
     this.trace("applyStateSnapshot:begin", { snapshot, prevState: this.state });
+    const previousMode = this.getVisibleMixMode();
+    const fromValues = this.captureVisibleValues();
     const maxStepIndex = Math.max(0, this.activeProgram.steps.length - 1);
     const stepIndex = Math.max(0, Math.min(maxStepIndex, Math.floor(snapshot.stepIndex)));
     this.ensureProgramStep(stepIndex);
@@ -288,6 +309,13 @@ export class Sequencer {
       this.stopTimer();
     }
 
+    const nextMode = this.getVisibleMixMode();
+    if (nextMode !== previousMode) {
+      this.beginModeTransition(nextMode, fromValues);
+    } else if (!this.state.isPlaying) {
+      this.stopMixTimer();
+    }
+
     this.emitFrame();
     this.trace("applyStateSnapshot:end", { state: this.state });
   }
@@ -303,6 +331,7 @@ export class Sequencer {
     if (this.timer) return;
     this.lastTickAtMs = performance.now();
     this.timer = setInterval(() => this.tick(), this.frameIntervalMs);
+    this.stopMixTimer();
     this.trace("startTimer", { frameIntervalMs: this.frameIntervalMs });
   }
 
@@ -312,6 +341,27 @@ export class Sequencer {
     this.timer = null;
     this.lastTickAtMs = null;
     this.trace("stopTimer");
+  }
+
+  private startMixTimer(): void {
+    if (this.state.isPlaying) return;
+    if (!this.mixTransition) return;
+    if (this.mixTimer) return;
+    this.mixTimer = setInterval(() => {
+      if (this.state.isPlaying || !this.mixTransition) {
+        this.stopMixTimer();
+        return;
+      }
+      this.emitFrame();
+    }, this.frameIntervalMs);
+    this.trace("startMixTimer", { frameIntervalMs: this.frameIntervalMs });
+  }
+
+  private stopMixTimer(): void {
+    if (!this.mixTimer) return;
+    clearInterval(this.mixTimer);
+    this.mixTimer = null;
+    this.trace("stopMixTimer");
   }
 
   private tick(): void {
@@ -344,7 +394,9 @@ export class Sequencer {
           this.state.stepIndex = steps.length - 1;
           this.state.positionMs = 0;
           this.state.isPlaying = false;
+          const fromValues = this.buildSequencerValues();
           this.stopTimer();
+          this.beginModeTransition("static", fromValues);
           break;
         }
       } else {
@@ -368,6 +420,29 @@ export class Sequencer {
         frames: [],
       });
     }
+  }
+
+  private beginModeTransition(toMode: VisibleMixMode, fromValues: LayerValueMap): void {
+    this.mixTransition = {
+      startedAtMs: performance.now(),
+      fromValues: cloneLayerValues(fromValues),
+      toMode,
+    };
+    if (this.state.isPlaying) {
+      this.stopMixTimer();
+    } else {
+      this.startMixTimer();
+    }
+    this.trace("beginModeTransition", { toMode, keys: Object.keys(fromValues) });
+  }
+
+  private getVisibleMixMode(): VisibleMixMode {
+    return this.state.isPlaying && this.activeProgram && this.activeProgram.steps.length > 0 ? "sequencer" : "static";
+  }
+
+  private captureVisibleValues(): LayerValueMap {
+    const frame = this.buildFrame();
+    return cloneLayerValues(frame.values);
   }
 
   private setLayerAKey(key: string, value: FeatureValue): boolean {
@@ -410,15 +485,24 @@ export class Sequencer {
   }
 
   private buildFrame(): SequencerFrame {
+    const layerAValues = cloneLayerValues(this.layerAValues);
+    const layerBValues = this.buildSequencerValues();
+    const targetMode = this.getVisibleMixMode();
+    const targetValues = targetMode === "sequencer" ? layerBValues : layerAValues;
+    const values = this.buildVisibleValues(targetMode, targetValues);
+
+    return {
+      timestamp: Date.now(),
+      values,
+      layerAValues,
+      layerBValues,
+      state: { ...this.state },
+    };
+  }
+
+  private buildSequencerValues(): LayerValueMap {
     if (!this.activeProgram || this.activeProgram.steps.length === 0) {
-      const layerAValues = cloneLayerValues(this.layerAValues);
-      return {
-        timestamp: Date.now(),
-        values: layerAValues,
-        layerAValues,
-        layerBValues: {},
-        state: { ...this.state },
-      };
+      return {};
     }
 
     const steps = this.activeProgram.steps;
@@ -467,16 +551,22 @@ export class Sequencer {
       if (!isZeroValue(out)) layerBValues[key] = out;
     }
 
-    const layerAValues = cloneLayerValues(this.layerAValues);
-    const values = addLayerValues(layerAValues, layerBValues);
+    return layerBValues;
+  }
 
-    return {
-      timestamp: Date.now(),
-      values,
-      layerAValues,
-      layerBValues,
-      state: { ...this.state },
-    };
+  private buildVisibleValues(targetMode: VisibleMixMode, targetValues: LayerValueMap): LayerValueMap {
+    const transition = this.mixTransition;
+    if (!transition || transition.toMode !== targetMode) {
+      return cloneLayerValues(targetValues);
+    }
+
+    const progress = clamp01((performance.now() - transition.startedAtMs) / MODE_SWITCH_FADE_MS);
+    const values = interpolateLayerValues(transition.fromValues, targetValues, progress);
+    if (progress >= 1) {
+      this.mixTransition = null;
+      this.stopMixTimer();
+    }
+    return values;
   }
 
   private trace(event: string, payload?: unknown): void {
