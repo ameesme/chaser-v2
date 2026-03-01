@@ -442,11 +442,6 @@ input:hover {
     grid-row: 2;
   }
 
-  .tempo-row #lockSpmInput {
-    grid-column: 3;
-    grid-row: 2;
-  }
-
   .toolbar-group-programs {
     margin-left: 0;
   }

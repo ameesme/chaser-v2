@@ -68,7 +68,12 @@ async function buildServer() {
   const applyProgram = (programId: string): void => {
     const program = programStore.get(programId);
     if (!program) return;
-    sequencer.setProgram(program);
+    const currentState = sequencer.getState();
+    const preserveTransport = currentState.isPlaying && currentState.stepIndex < program.steps.length;
+    sequencer.setProgram(program, {
+      preservePlayhead: preserveTransport,
+      preserveTempo: true,
+    });
     const environment = config.environments.find((item) => item.id === program.environmentId);
     sequencer.setFrameRate(environment?.renderFps ?? 30);
   };
@@ -88,6 +93,12 @@ async function buildServer() {
         sequencer.resume();
       },
       triggerProgram: (programId) => {
+        const program = programStore.get(programId);
+        if (!program) return;
+        const currentState = sequencer.getState();
+        if (!currentState.isPlaying) {
+          sequencer.setSpm(program.spm);
+        }
         applyProgram(programId);
         sequencer.setStep(0);
         sequencer.resume();

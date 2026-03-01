@@ -129,7 +129,11 @@ export async function registerRoutes(
               "Applying active program update",
             );
           }
-          deps.sequencer.setProgram(updated, { preservePlayhead: true, suppressEmit: true });
+          deps.sequencer.setProgram(updated, {
+            preservePlayhead: true,
+            suppressEmit: true,
+            preserveTempo: true,
+          });
           const environment = deps.config.environments.find(
             (item) => item.id === updated.environmentId,
           );

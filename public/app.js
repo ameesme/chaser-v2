@@ -21,7 +21,6 @@ const loopInput = document.getElementById("loopInput");
 const spmDownBtn = document.getElementById("spmDownBtn");
 const tapSyncBtn = document.getElementById("tapSyncBtn");
 const spmUpBtn = document.getElementById("spmUpBtn");
-const lockSpmInput = document.getElementById("lockSpmInput");
 const spmInput = document.getElementById("spmInput");
 const spmMultiplierSelect = document.getElementById("spmMultiplierSelect");
 const fadeMsInput = document.getElementById("fadeMsInput");
@@ -69,7 +68,6 @@ const state = {
   tapSyncActive: false,
   tapSyncSpm: null,
   tapTimesMs: [],
-  lockedSpm: null,
   mobileTab: localStorage.getItem("mobileTab") === "sequencer" ? "sequencer" : "playback",
 };
 
@@ -232,15 +230,6 @@ function effectiveSpmFromBase(baseSpm) {
   return clampSpm(clampSpm(baseSpm) * currentSpmMultiplier());
 }
 
-function isLockSpmEnabled() {
-  return lockSpmInput.classList.contains("active-tool");
-}
-
-function setLockSpmEnabled(enabled) {
-  lockSpmInput.classList.toggle("active-tool", Boolean(enabled));
-  lockSpmInput.setAttribute("aria-pressed", String(Boolean(enabled)));
-}
-
 function isLoopEnabled() {
   return loopInput.classList.contains("active-tool");
 }
@@ -251,33 +240,22 @@ function setLoopEnabled(enabled) {
 }
 
 function effectiveSpmForControls(program) {
-  if (isLockSpmEnabled() && state.lockedSpm !== null) {
-    return state.lockedSpm;
-  }
   if (state.tapSyncActive && state.tapSyncSpm !== null) {
     return state.tapSyncSpm;
   }
+  if (state.lastFrame?.state?.spm) {
+    return clampSpm(state.lastFrame.state.spm / currentSpmMultiplier());
+  }
+  if (Number.isFinite(Number(spmInput.value))) {
+    return clampSpm(Number(spmInput.value));
+  }
   return program?.spm ?? 120;
-}
-
-function isLockedSpmActive() {
-  return isLockSpmEnabled() && state.lockedSpm !== null;
-}
-
-function enforceLockedSpm() {
-  if (!isLockedSpmActive()) return;
-  const baseSpm = clampSpm(state.lockedSpm);
-  spmInput.value = String(baseSpm);
-  send({ type: "tempo", payload: { spm: effectiveSpmFromBase(baseSpm) } });
 }
 
 function setTapSyncSpm(spm) {
   const clamped = clampSpm(spm);
   state.tapSyncSpm = clamped;
   state.tapSyncActive = true;
-  if (isLockSpmEnabled()) {
-    state.lockedSpm = clamped;
-  }
   return clamped;
 }
 
@@ -285,9 +263,6 @@ function clearTapSync() {
   state.tapSyncActive = false;
   state.tapSyncSpm = null;
   state.tapTimesMs = [];
-  if (!isLockSpmEnabled()) {
-    state.lockedSpm = null;
-  }
 }
 
 function updateTapSyncUi() {
@@ -422,32 +397,31 @@ function renderMobileProgramGrid() {
   }
 }
 
+function activateSelectedProgram(programId) {
+  send({ type: "program", payload: { programId } });
+  if (!state.isPlaying) {
+    send({ type: "play" });
+  }
+}
+
 function selectProgram(programId) {
   state.selectedProgramId = programId;
   const program = selectedProgram();
   if (!program) return;
   programSelect.value = program.id;
 
-  if (!isLockSpmEnabled() && state.tapSyncActive) {
-    deactivateTapSync();
-  }
-
   state.timelineSteps = Math.max(1, program.steps.length || 1);
   setLoopEnabled(Boolean(program.loop ?? true));
-  const effectiveSpm = effectiveSpmForControls(program);
-  spmInput.value = String(effectiveSpm);
+  spmInput.value = String(effectiveSpmForControls(program));
   fadeMsInput.value = String(clampFadeMs(program.steps?.[0]?.fadeMs ?? 300));
-  state.currentPlayheadStep = 0;
+  if (!state.isPlaying || state.currentPlayheadStep >= program.steps.length) {
+    state.currentPlayheadStep = 0;
+  }
   renderPalette();
   renderStepGrid();
   renderMobileProgramGrid();
   if (state.lastFrame) drawSimulator(state.lastFrame);
-  send({ type: "program", payload: { programId: program.id } });
-  if (isLockedSpmActive()) {
-    requestAnimationFrame(() => enforceLockedSpm());
-  } else {
-    send({ type: "tempo", payload: { spm: effectiveSpmFromBase(effectiveSpm) } });
-  }
+  activateSelectedProgram(program.id);
 }
 
 function layoutRoomCanvas(environment) {
@@ -1276,9 +1250,7 @@ function updateSimulator(frame) {
     renderStepGrid();
   }
 
-  const baseSpm = isLockedSpmActive()
-    ? clampSpm(state.lockedSpm)
-    : clampSpm(frameState.spm / currentSpmMultiplier());
+  const baseSpm = clampSpm(frameState.spm / currentSpmMultiplier());
   const targetSpm = effectiveSpmFromBase(baseSpm);
   spmInput.value = String(baseSpm);
   if (frameState.spm !== targetSpm) {
@@ -1399,7 +1371,7 @@ async function createProgram() {
   fillProgramSelect();
   renderPalette();
   renderStepGrid();
-  send({ type: "program", payload: { programId: created.id } });
+  activateSelectedProgram(created.id);
 }
 
 async function deleteProgram() {
@@ -1424,7 +1396,7 @@ async function deleteProgram() {
     fillProgramSelect();
     renderPalette();
     renderStepGrid();
-    send({ type: "program", payload: { programId: fallback.id } });
+    activateSelectedProgram(fallback.id);
   }
 }
 
@@ -1484,9 +1456,6 @@ spmInput.oninput = () => {
 spmMultiplierSelect.onchange = () => {
   const baseSpm = clampSpm(spmInput.value);
   send({ type: "tempo", payload: { spm: effectiveSpmFromBase(baseSpm) } });
-  if (isLockedSpmActive()) {
-    requestAnimationFrame(() => enforceLockedSpm());
-  }
 };
 
 fadeMsInput.onchange = () => {
@@ -1531,19 +1500,6 @@ spmUpBtn.onclick = () => {
   applyBaseSpmChange(Number(spmInput.value) + 1);
 };
 
-lockSpmInput.onclick = () => {
-  const enabled = !isLockSpmEnabled();
-  setLockSpmEnabled(enabled);
-  if (enabled) {
-    if (state.tapSyncSpm !== null) {
-      state.lockedSpm = state.tapSyncSpm;
-      enforceLockedSpm();
-    }
-  } else {
-    state.lockedSpm = null;
-  }
-};
-
 programSelect.onchange = () => {
   selectProgram(programSelect.value);
 };
@@ -1574,7 +1530,6 @@ ws.onmessage = (message) => {
 updatePlayPauseLabel();
 updateBlackoutUi();
 setLoopEnabled(true);
-setLockSpmEnabled(false);
 updateTapSyncUi();
 applyMobileTabUi();
 renderLayerModeSwitch();

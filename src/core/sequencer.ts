@@ -105,7 +105,10 @@ export class Sequencer {
   private mixTransition: MixTransition | null = null;
   private debug = process.env.CHASER_DEBUG === "1";
 
-  setProgram(program: ProgramDefinition, options?: { preservePlayhead?: boolean; suppressEmit?: boolean }): void {
+  setProgram(
+    program: ProgramDefinition,
+    options?: { preservePlayhead?: boolean; suppressEmit?: boolean; preserveTempo?: boolean },
+  ): void {
     this.trace("setProgram:begin", {
       programId: program.id,
       preservePlayhead: Boolean(options?.preservePlayhead),
@@ -114,7 +117,9 @@ export class Sequencer {
     });
     this.activeProgram = program;
     this.state.programId = program.id;
-    this.state.spm = Math.max(1, Math.min(500, Math.round(program.spm)));
+    if (!options?.preserveTempo) {
+      this.state.spm = Math.max(1, Math.min(500, Math.round(program.spm)));
+    }
     this.state.loop = program.loop;
     if (options?.preservePlayhead) {
       const maxStepIndex = Math.max(0, program.steps.length - 1);
