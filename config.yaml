@@ -1,5 +1,5 @@
 name: "Chaser DMX"
-version: "0.1.6"
+version: "0.1.7"
 slug: "chaser_dmx"
 description: "Real-time DMX lighting sequencer with ArtNet and MQTT control"
 url: "https://github.com/ameesme/chaser-v2"
